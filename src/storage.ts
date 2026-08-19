@@ -45,6 +45,7 @@ export interface UserProfile {
   reviewOnlyCompletedDates?: string[];
   mainReviewStartSurahId?: number;
   mainReviewEndSurahId?: number;
+  mainReviewDailyAmountValue?: number; // v2.1: separated from reviewOnlyDailyAmountValue
   mainReviewProgressPages?: number;
   reviewStartPoint: string;
 }
@@ -117,6 +118,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   reviewOnlyCompletedDates: [],
   mainReviewStartSurahId: 114,
   mainReviewEndSurahId: 18,
+  mainReviewDailyAmountValue: 10, // Default 10 pages for main review
   mainReviewProgressPages: 0,
   reviewStartPoint: 'fajr'
 };

@@ -58,10 +58,10 @@ export function calculateTodayPrayers(profile: UserProfile): PrayerTimeInfo[] {
 }
 
 /**
- * Generates the chronological sequence of prayer slots based on user profile settings
+ * Builds the chronological sequence of prayer slots based on user profile settings
  * and rotates them according to the selected start point.
  */
-function generateOrderedSlots(profile: UserProfile): {
+export function buildPrayerSlots(profile: UserProfile): {
   parentPrayer: "الفجر" | "الضحى" | "الظهر" | "العصر" | "المغرب" | "العشاء";
   prayerName: string;
   type: "fard" | "sunnah" | "qiyam";
@@ -226,7 +226,7 @@ export function distributeReviewsToPrayers(
   });
 
   // 2. Define the daily prayers and their attached Sunnahs in rotated chronological order
-  const slots = generateOrderedSlots(profile);
+  const slots = buildPrayerSlots(profile);
 
   // 3. Distribute the review parts sequentially over available slots
   const distributed: DistributedSlot[] = [];
@@ -269,7 +269,7 @@ export function distributeKhatmahReviewToPrayers(profile: UserProfile): Distribu
     }
   } else {
     const startPage = profile.reviewOnlyCurrentPage || 1;
-    const amount = profile.reviewOnlyDailyAmountValue || 20;
+    const amount = profile.reviewOnlyDailyAmountValue || 20; // v2.1: distinct amount for khatmah review only
     const direction = profile.reviewOnlyDirection || "forward";
 
     if (direction === "forward") {
@@ -288,7 +288,7 @@ export function distributeKhatmahReviewToPrayers(profile: UserProfile): Distribu
   }
 
   // Generate prayer slots in rotated chronological order
-  const slots = generateOrderedSlots(profile);
+  const slots = buildPrayerSlots(profile);
 
   if (slots.length === 0 || pages.length === 0) return [];
 

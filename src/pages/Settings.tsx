@@ -58,6 +58,20 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
           </div>
 
           <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-600">مقدار المراجعة لـ (مسار المراجعة فقط)</label>
+            <select value={userProfile.reviewOnlyDailyAmountValue} onChange={(e) => updateProfile({ reviewOnlyDailyAmountValue: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
+              {[1, 2, 5, 10, 20, 40, 60].map(v => <option key={v} value={v}>{v} صفحة</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-600">مقدار المراجعة لـ (المراجعة الرئيسية)</label>
+            <select value={userProfile.mainReviewDailyAmountValue} onChange={(e) => updateProfile({ mainReviewDailyAmountValue: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
+              {[5, 10, 20, 30, 40].map(v => <option key={v} value={v}>{v} صفحة</option>)}
+            </select>
+          </div>
+
+          <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600">ركعات قيام الليل</label>
             <select value={userProfile.nightPrayerRakats} onChange={(e) => updateProfile({ nightPrayerRakats: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
               {[2, 4, 8, 11].map(r => <option key={r} value={r}>{r} ركعات</option>)}

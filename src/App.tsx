@@ -39,7 +39,8 @@ export default function App() {
     handleAddHifz,
     handleDeleteBlock,
     handleToggleBlockStatus,
-    handleDetectLocation
+    handleDetectLocation,
+    handleCompleteKhatmahReviewToday
   } = useAppActions();
 
   const [activeTab, setActiveTab] = useState<TabType>("home");
@@ -112,7 +113,7 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 overflow-y-auto pb-24">
         <AnimatePresence mode="wait">
-          {activeTab === "home" && <Home {...commonProps} onDetectLocation={handleDetectLocation} gpsLoading={gpsLoading} prayerTimesList={prayerTimesList} todayTasks={todayTasks} repetitions={state.repetitions} onDecrementRepetition={handleDecrementRepetition} onToggleReviewComplete={handleToggleReviewComplete} onCompleteDay66={handleCompleteDay66} hasDay66={hasDay66TriggerToday(state, todayStr)} distributionSlots={distributionSlots} onCompleteKhatmahReview={() => {}} />}
+          {activeTab === "home" && <Home {...commonProps} onDetectLocation={handleDetectLocation} gpsLoading={gpsLoading} prayerTimesList={prayerTimesList} todayTasks={todayTasks} repetitions={state.repetitions} onDecrementRepetition={handleDecrementRepetition} onToggleReviewComplete={handleToggleReviewComplete} onCompleteDay66={handleCompleteDay66} hasDay66={hasDay66TriggerToday(state, todayStr)} distributionSlots={distributionSlots} onCompleteKhatmahReview={handleCompleteKhatmahReviewToday} />}
           {activeTab === "hifz" && <Hifz {...commonProps} newHifz={newHifz} setNewHifz={setNewHifz} onAddHifz={(e) => { e.preventDefault(); handleAddHifz(newHifz.surahId, newHifz.fromAyah, newHifz.toAyah, newHifz.repetitions); }} onDeleteBlock={handleDeleteBlock} onToggleBlockStatus={handleToggleBlockStatus} deletingBlockId={deletingBlockId} setDeletingBlockId={setDeletingBlockId} />}
           {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} />}
           {activeTab === "prayers" && <Prayers {...commonProps} distributionSlots={distributionSlots} onUpdateReviewProgress={handleUpdateReviewProgress} />}

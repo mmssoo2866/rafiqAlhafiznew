@@ -136,6 +136,73 @@ export const useAppActions = () => {
     });
   }, [state, updateState]);
 
+  const handleCompleteKhatmahReviewToday = useCallback(() => {
+    if (!state) return;
+    const userProfile = state.profile!;
+    const todayStr = getLocalDateKey();
+    const completedDates = userProfile.reviewOnlyCompletedDates || [];
+    const isAlreadyDone = completedDates.includes(todayStr);
+
+    let updatedProfile: UserProfile;
+
+    if (userProfile.reviewOnlyDailyAmountType === "surah_ayah") {
+      const sId = userProfile.reviewOnlySurahId || 2;
+      const fA = userProfile.reviewOnlyFromAyah || 1;
+      const tA = userProfile.reviewOnlyToAyah || 100;
+      const surahObj = getSurahById(sId);
+      const maxA = surahObj ? surahObj.ayahs : 286;
+      const span = Math.abs(tA - fA) + 1;
+
+      let nextSId = sId;
+      let nextFA = tA + 1;
+      let nextTA = nextFA + span - 1;
+
+      if (nextFA > maxA) {
+        nextSId = (sId % 114) + 1;
+        nextFA = 1;
+        const nextSurahObj = getSurahById(nextSId);
+        const nextMaxA = nextSurahObj ? nextSurahObj.ayahs : 100;
+        nextTA = Math.min(span, nextMaxA);
+      } else if (nextTA > maxA) {
+        nextTA = maxA;
+      }
+
+      const nextPage = getPageForAyah(nextSId, nextFA);
+
+      updatedProfile = {
+        ...userProfile,
+        reviewOnlySurahId: nextSId,
+        reviewOnlyFromAyah: nextFA,
+        reviewOnlyToAyah: nextTA,
+        reviewOnlyCurrentPage: nextPage,
+        reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr],
+        streakDays: userProfile.streakDays + (isAlreadyDone ? 0 : 1),
+        lastActiveDate: todayStr
+      };
+    } else {
+      const curPage = userProfile.reviewOnlyCurrentPage || 1;
+      const amount = userProfile.reviewOnlyDailyAmountValue || 20;
+      const dir = userProfile.reviewOnlyDirection || "forward";
+
+      let nextPage = curPage;
+      if (dir === "forward") {
+        nextPage = ((curPage - 1 + amount) % 610) + 1;
+      } else {
+        nextPage = ((curPage - 1 - amount + 610000) % 610) + 1;
+      }
+
+      updatedProfile = {
+        ...userProfile,
+        reviewOnlyCurrentPage: nextPage,
+        reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr],
+        streakDays: userProfile.streakDays + (isAlreadyDone ? 0 : 1),
+        lastActiveDate: todayStr
+      };
+    }
+
+    updateState(logActivity({ ...state, profile: updatedProfile }, "إنجاز ورد المراجعة", `تم إتمام مراجعة اليوم بنجاح.`));
+  }, [state, updateState]);
+
   return {
     state,
     setState,
@@ -147,6 +214,7 @@ export const useAppActions = () => {
     handleAddHifz,
     handleDeleteBlock,
     handleToggleBlockStatus,
-    handleDetectLocation
+    handleDetectLocation,
+    handleCompleteKhatmahReviewToday
   };
 };
