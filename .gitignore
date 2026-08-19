@@ -1,0 +1,10 @@
+node_modules/
+.pnpm-store/
+.local/
+.artifacts/
+.vercel/
+.idea/
+dist/
+*.local
+.env
+.env.local

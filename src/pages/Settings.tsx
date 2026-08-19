@@ -1,0 +1,98 @@
+import React from "react";
+import { motion } from "motion/react";
+import { Settings as SettingsIcon, Download, Upload, Trash2 } from "lucide-react";
+import { PageProps } from "../types";
+
+interface SettingsProps extends PageProps {
+  onExportBackup: () => void;
+  onImportBackup: (e: React.ChangeEvent<HTMLInputElement>) => void;
+  onResetApp: () => void;
+}
+
+const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBackup, onImportBackup, onResetApp }) => {
+  const userProfile = state.profile!;
+
+  const updateProfile = (changes: any) => {
+    onUpdateState({ ...state, profile: { ...userProfile, ...changes } });
+  };
+
+  return (
+    <motion.div
+      initial={{ opacity: 0, y: 10 }}
+      animate={{ opacity: 1, y: 0 }}
+      exit={{ opacity: 0, y: -10 }}
+      className="space-y-6 text-right" dir="rtl"
+    >
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
+        <h3 className="text-xl font-serif font-bold text-emerald-900 border-b pb-3 flex items-center gap-2">
+          <SettingsIcon className="w-6 h-6" />
+          <span>إعدادات حساب الحافظ الشخصي</span>
+        </h3>
+
+        <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-600">اسم الحافظ الكريم</label>
+            <input type="text" value={userProfile.name} onChange={(e) => updateProfile({ name: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold focus:ring-2 focus:ring-emerald-600 outline-none" />
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-600">نقطة بداية المراجعة اليومية</label>
+            <select value={userProfile.reviewStartPoint} onChange={(e) => updateProfile({ reviewStartPoint: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
+              <option value="duha">الضحى</option>
+              <option value="sunnah_fajr">سنة الفجر</option>
+              <option value="fajr">الفجر</option>
+              <option value="dhuhr">الظهر</option>
+              <option value="asr">العصر</option>
+              <option value="maghrib">المغرب</option>
+              <option value="isha">العشاء</option>
+              <option value="qiyam">قيام الليل / الوتر</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-600">دور القراءة في الصلاة</label>
+            <select value={userProfile.prayerRole} onChange={(e) => updateProfile({ prayerRole: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
+              <option value="imam">إمام (مراجعة جهرية وسرية)</option>
+              <option value="maamoom">مأموم (أستمع جهراً ومراجعة سرية)</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-600">ركعات قيام الليل</label>
+            <select value={userProfile.nightPrayerRakats} onChange={(e) => updateProfile({ nightPrayerRakats: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
+              {[2, 4, 8, 11].map(r => <option key={r} value={r}>{r} ركعات</option>)}
+            </select>
+          </div>
+        </div>
+      </div>
+
+      <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
+          <h4 className="text-lg font-bold text-emerald-950 border-b pb-2">🔄 البيانات والمزامنة</h4>
+          <div className="grid grid-cols-2 gap-3">
+            <button onClick={onExportBackup} className="py-2.5 bg-emerald-50 text-emerald-900 rounded-xl text-xs font-bold flex items-center justify-center gap-2 hover:bg-emerald-100 transition"><Download className="w-4 h-4" /> تصدير</button>
+            <label className="py-2.5 bg-gray-100 text-gray-700 rounded-xl text-xs font-bold flex items-center justify-center gap-2 cursor-pointer hover:bg-gray-200 transition">
+              <Upload className="w-4 h-4" /> استيراد
+              <input type="file" accept=".json" onChange={onImportBackup} className="hidden" />
+            </label>
+          </div>
+          <button onClick={onResetApp} className="w-full py-2.5 bg-red-50 text-red-600 rounded-xl text-xs font-bold hover:bg-red-100 transition flex items-center justify-center gap-2"><Trash2 className="w-4 h-4" /> إعادة ضبط التطبيق</button>
+        </div>
+
+        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4 overflow-hidden">
+          <h4 className="text-lg font-bold text-emerald-950 border-b pb-2">📋 سجل النشاط</h4>
+          <div className="space-y-2 max-h-[180px] overflow-y-auto pr-1">
+            {state.activityLog.length === 0 ? <p className="text-xs text-gray-400 text-center py-6">السجل فارغ حالياً.</p> : state.activityLog.map(log => (
+              <div key={log.id} className="p-2 border-b last:border-b-0">
+                <p className="text-xs font-bold text-emerald-900">{log.title}</p>
+                <p className="text-[10px] text-gray-400">{log.desc}</p>
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </motion.div>
+  );
+};
+
+export default Settings;
