@@ -12,7 +12,8 @@ export const useAppActions = () => {
 
   const handleDecrementRepetition = useCallback((blockId: string) => {
     if (!state) return;
-    const currentVal = state.repetitions[blockId] !== undefined ? state.repetitions[blockId] : 100;
+    const block = state.blocks.find(b => b.id === blockId);
+    const currentVal = state.repetitions[blockId] ?? block?.repetitionTarget ?? 0;
     if (currentVal <= 0) return;
 
     const newVal = currentVal - 1;
@@ -25,9 +26,9 @@ export const useAppActions = () => {
     };
 
     if (newVal === 0) {
-      const block = state.blocks.find(b => b.id === blockId);
       const sName = block ? getSurahName(block.surahId) : "";
-      updatedState = logActivity(updatedState, "إكمال تكرار الحفظ", `تبارك الله! أكملت التكرار لمقرر سورة ${sName} بنجاح.`);
+      const target = block?.repetitionTarget ?? 0;
+      updatedState = logActivity(updatedState, "إكمال تكرار الحفظ", `تبارك الله! أكملت الـ ${target} تكراراً لمقرر سورة ${sName} بنجاح.`);
     }
 
     updateState(updatedState);
