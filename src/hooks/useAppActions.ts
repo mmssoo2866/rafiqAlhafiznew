@@ -1,6 +1,6 @@
 import { useState, useCallback } from "react";
 import { AppState, UserProfile, loadAppState, saveAppState, logActivity, getLocalDateKey, MemorizationBlock, CompletedReviews } from "../storage";
-import { getSurahById, getSurahName } from "../quranData";
+import { getSurahById, getSurahName, getPageForAyah } from "../quranData";
 
 export const useAppActions = () => {
   const [state, setState] = useState<AppState | null>(null);
