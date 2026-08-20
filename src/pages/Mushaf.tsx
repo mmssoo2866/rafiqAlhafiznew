@@ -62,7 +62,17 @@ const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, musha
         <button onClick={() => mushafPage > 1 && setMushafPage(mushafPage - 1)} className="p-3 bg-[#e2dec9] hover:bg-[#d5d0b6] rounded-full shadow-inner"><ChevronRight className="w-6 h-6" /></button>
         <div className="flex-1 w-full bg-white rounded-2xl shadow-sm p-4 min-h-[500px] flex flex-col justify-center items-center overflow-hidden">
           {mushafViewMode === "image" ? (
-            <img src={`https://android.quran.com/data/single_page/images_1920/page${String(mushafPage).padStart(3, "0")}.png`} alt={`Page ${mushafPage}`} className="max-h-[75vh] w-auto object-contain select-none" />
+            <img
+              src={`https://android.quran.com/data/width_1260/page${String(mushafPage).padStart(3, "0")}.png`}
+              alt={`Page ${mushafPage}`}
+              className="max-h-[75vh] w-auto object-contain select-none"
+              onError={(e) => {
+                const target = e.target as HTMLImageElement;
+                if (!target.src.includes("files.quran.app")) {
+                  target.src = `https://files.quran.app/hafs/madani/width_1260/page${String(mushafPage).padStart(3, "0")}.png`;
+                }
+              }}
+            />
           ) : (
             <div className="p-4 text-center space-y-4">
               <span className="text-4xl opacity-10">📖</span>
