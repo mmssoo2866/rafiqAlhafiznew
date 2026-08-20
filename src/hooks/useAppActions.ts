@@ -10,6 +10,32 @@ export const useAppActions = () => {
     saveAppState(updated);
   }, []);
 
+  const incrementStreakIfNeeded = useCallback((currentState: AppState): AppState => {
+    if (!currentState.profile) return currentState;
+    const todayStr = getLocalDateKey();
+    if (currentState.profile.lastActiveDate === todayStr) return currentState;
+
+    const yesterday = new Date();
+    yesterday.setDate(yesterday.getDate() - 1);
+    const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+
+    let newStreak = currentState.profile.streakDays;
+    if (currentState.profile.lastActiveDate === yStr) {
+      newStreak += 1;
+    } else {
+      newStreak = 1;
+    }
+
+    return {
+      ...currentState,
+      profile: {
+        ...currentState.profile,
+        streakDays: newStreak,
+        lastActiveDate: todayStr
+      }
+    };
+  }, []);
+
   const handleDecrementRepetition = useCallback((blockId: string) => {
     if (!state) return;
     const block = state.blocks.find(b => b.id === blockId);
@@ -28,11 +54,12 @@ export const useAppActions = () => {
     if (newVal === 0) {
       const sName = block ? getSurahName(block.surahId) : "";
       const target = block?.repetitionTarget ?? 0;
+      updatedState = incrementStreakIfNeeded(updatedState);
       updatedState = logActivity(updatedState, "إكمال تكرار الحفظ", `تبارك الله! أكملت الـ ${target} تكراراً لمقرر سورة ${sName} بنجاح.`);
     }
 
     updateState(updatedState);
-  }, [state, updateState]);
+  }, [state, updateState, incrementStreakIfNeeded]);
 
   const handleToggleReviewComplete = useCallback((blockId: string) => {
     if (!state) return;
@@ -47,6 +74,8 @@ export const useAppActions = () => {
     const block = state.blocks.find(b => b.id === blockId);
     const surahName = block ? getSurahName(block.surahId) : "";
 
+    let updatedState = { ...state };
+
     if (isCompleted) {
       updatedList = todayList.filter(id => id !== blockId);
       title = "إلغاء مراجعة";
@@ -55,18 +84,19 @@ export const useAppActions = () => {
       updatedList = [...todayList, blockId];
       title = "إنجاز مراجعة";
       desc = `تم إتمام المراجعة اليومية لسورة ${surahName}`;
+      updatedState = incrementStreakIfNeeded(updatedState);
     }
 
-    const updatedState = {
-      ...state,
+    updatedState = {
+      ...updatedState,
       completedReviews: {
-        ...state.completedReviews,
+        ...updatedState.completedReviews,
         [todayStr]: updatedList
       }
     };
 
     updateState(logActivity(updatedState, title, desc));
-  }, [state, updateState]);
+  }, [state, updateState, incrementStreakIfNeeded]);
 
   const handleUpdateReviewProgress = useCallback((index: number) => {
     if (!state) return;
@@ -143,7 +173,8 @@ export const useAppActions = () => {
     const completedDates = userProfile.reviewOnlyCompletedDates || [];
     const isAlreadyDone = completedDates.includes(todayStr);
 
-    let updatedProfile: UserProfile;
+    let updatedState = incrementStreakIfNeeded(state);
+    let updatedProfile = updatedState.profile!;
 
     if (userProfile.reviewOnlyDailyAmountType === "surah_ayah") {
       const sId = userProfile.reviewOnlySurahId || 2;
@@ -170,14 +201,12 @@ export const useAppActions = () => {
       const nextPage = getPageForAyah(nextSId, nextFA);
 
       updatedProfile = {
-        ...userProfile,
+        ...updatedProfile,
         reviewOnlySurahId: nextSId,
         reviewOnlyFromAyah: nextFA,
         reviewOnlyToAyah: nextTA,
         reviewOnlyCurrentPage: nextPage,
-        reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr],
-        streakDays: userProfile.streakDays + (isAlreadyDone ? 0 : 1),
-        lastActiveDate: todayStr
+        reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr]
       };
     } else {
       const curPage = userProfile.reviewOnlyCurrentPage || 1;
@@ -192,16 +221,14 @@ export const useAppActions = () => {
       }
 
       updatedProfile = {
-        ...userProfile,
+        ...updatedProfile,
         reviewOnlyCurrentPage: nextPage,
-        reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr],
-        streakDays: userProfile.streakDays + (isAlreadyDone ? 0 : 1),
-        lastActiveDate: todayStr
+        reviewOnlyCompletedDates: isAlreadyDone ? completedDates : [...completedDates, todayStr]
       };
     }
 
-    updateState(logActivity({ ...state, profile: updatedProfile }, "إنجاز ورد المراجعة", `تم إتمام مراجعة اليوم بنجاح.`));
-  }, [state, updateState]);
+    updateState(logActivity({ ...updatedState, profile: updatedProfile }, "إنجاز ورد المراجعة", `تم إتمام مراجعة اليوم بنجاح.`));
+  }, [state, updateState, incrementStreakIfNeeded]);
 
   return {
     state,

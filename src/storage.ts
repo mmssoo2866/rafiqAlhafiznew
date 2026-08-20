@@ -160,7 +160,7 @@ export function loadAppState(): AppState {
 
     const todayStr = getLocalDateKey();
     if (state.profile && state.profile.lastActiveDate !== todayStr) {
-      // Calculate streak
+      // Check if the user missed a day
       const yesterday = new Date();
       yesterday.setDate(yesterday.getDate() - 1);
       const yYear = yesterday.getFullYear();
@@ -168,17 +168,13 @@ export function loadAppState(): AppState {
       const yDay = String(yesterday.getDate()).padStart(2, "0");
       const yesterdayStr = `${yYear}-${yMonth}-${yDay}`;
       
-      let newStreak = state.profile.streakDays;
-      if (state.profile.lastActiveDate === yesterdayStr) {
-        newStreak += 1; // Increment streak if active on consecutive days
-      } else {
-        newStreak = 1; // Reset streak if a day was missed
+      // If the last activity wasn't yesterday, the streak is broken
+      if (state.profile.lastActiveDate !== yesterdayStr) {
+        state.profile.streakDays = 0; // Reset to 0 until they do an action today
+        saveAppState(state);
       }
-      
-      state.profile.streakDays = newStreak;
-      state.profile.lastActiveDate = todayStr;
 
-      // Reset daily progress
+      // Reset daily progress for the new day
       state.reviewProgress = {};
 
       // Reset today's new memorization repetition counters
@@ -188,8 +184,6 @@ export function loadAppState(): AppState {
           state.repetitions[b.id] = b.repetitionTarget;
         }
       });
-      
-      saveAppState(state);
     } else if (isMigration) {
       saveAppState(state);
     }
