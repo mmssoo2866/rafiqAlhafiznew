@@ -59,6 +59,15 @@ export default function App() {
 
   if (!state) return <div className="min-h-screen flex items-center justify-center bg-gray-50 text-emerald-950 font-serif">جاري التحميل...</div>;
 
+  // If onboarding is not completed, we show the onboarding screen and skip the dashboard logic to prevent crashes
+  if (!state.onboardingCompleted) {
+    const handleOnboardingSubmit = (data: any) => {
+      const updated = { ...state, profile: { ...data }, onboardingCompleted: true };
+      updateState(logActivity(updated, "التهيئة", "تم إعداد التطبيق بنجاح."));
+    };
+    return <Onboarding onSubmit={handleOnboardingSubmit} />;
+  }
+
   const userProfile = state.profile!;
   const todayTasks = getTasksForDate(state, todayStr);
   const prayerTimesList = calculateTodayPrayers(userProfile);
@@ -67,20 +76,13 @@ export default function App() {
     : distributeReviewsToPrayers(todayTasks, userProfile);
 
   const onNavigateToMushaf = (sId: number, aNum: number) => {
-    // Basic navigation, can be expanded
     setActiveTab("mushaf");
-  };
-
-  const handleOnboardingSubmit = (data: any) => {
-    const updated = { ...state, profile: { ...userProfile, ...data }, onboardingCompleted: true };
-    updateState(logActivity(updated, "التهيئة", "تم إعداد التطبيق بنجاح."));
   };
 
   const commonProps = { state, todayStr, onUpdateState: updateState, onNavigateToMushaf, onToggleTab: setActiveTab };
 
   return (
     <div className="min-h-screen bg-[#f4f7f5] text-gray-800 font-sans flex flex-col antialiased select-none" dir="rtl">
-      {!state.onboardingCompleted && <Onboarding onSubmit={handleOnboardingSubmit} />}
 
       <header className="bg-emerald-900 text-white shadow-md p-4 shrink-0 border-b border-amber-500/20">
         <div className="max-w-6xl mx-auto flex flex-col md:flex-row justify-between items-center gap-4">
