@@ -196,131 +196,35 @@ export function buildPrayerSlots(profile: UserProfile): {
 }
 
 /**
- * Distributes today's available reviews across the allowed Rak'ahs of prayers
- * based on whether the user is an Imam (Fard loud + silent) or Ma'mum (Silent Fard + Sunnah + Qiyam).
+ * Core engine to distribute any array of content strings across available prayer slots.
+ * Uses a fair chunking algorithm to ensure even distribution.
  */
-export function distributeReviewsToPrayers(
-  reviewTasks: ScheduledTask[],
-  profile: UserProfile
+function distributeContentToSlots(
+  contentItems: string[],
+  profile: UserProfile,
+  idPrefix: string
 ): DistributedSlot[] {
-  // 1. Gather all tasks that represent REVIEWS of blocks (excluding those already completed and new memorization)
-  const activeReviews = reviewTasks.filter(t => t.type === "review" && !t.isCompleted);
-  if (activeReviews.length === 0) return [];
-
-  // Generate a flattened array of review strings/parts we need to recite
-  // For each block, we say: e.g. "البقرة 1-5" or separate if it is long
-  const reviewPartitions: string[] = [];
-  activeReviews.forEach(t => {
-    const sName = getSurahName(t.block.surahId);
-    const range = `سورة ${sName} (الآيات ${t.block.fromAyah} - ${t.block.toAyah})`;
-
-    // If the verses are long (e.g., > 10 ayhas), split into 2 rak'ah portions to make it easier for the memory!
-    const totalAyats = t.block.toAyah - t.block.fromAyah + 1;
-    if (totalAyats > 10) {
-      const mid = Math.floor((t.block.fromAyah + t.block.toAyah) / 2);
-      reviewPartitions.push(`سورة ${sName} (الآيات ${t.block.fromAyah} - ${mid})`);
-      reviewPartitions.push(`سورة ${sName} (الآيات ${mid + 1} - ${t.block.toAyah})`);
-    } else {
-      reviewPartitions.push(range);
-    }
-  });
-
-  // 2. Define the daily prayers and their attached Sunnahs in rotated chronological order
   const slots = buildPrayerSlots(profile);
+  if (slots.length === 0 || contentItems.length === 0) return [];
 
-  // 3. Distribute the review parts sequentially over available slots
   const distributed: DistributedSlot[] = [];
-  
-  reviewPartitions.forEach((part, index) => {
-    if (slots.length > 0) {
-      const slotIndex = index % slots.length;
-      const targetSlot = slots[slotIndex];
-      
-      distributed.push({
-        id: `dist-${index}`,
-        parentPrayer: targetSlot.parentPrayer,
-        prayerName: targetSlot.prayerName,
-        prayerType: targetSlot.type,
-        rakahNumber: targetSlot.rakah,
-        assignedContent: part
-      });
-    }
-  });
-
-  return distributed;
-}
-
-/**
- * Distributes today's Khatmah Review (Track 2 - Review Only) across daily prayers & rakats.
- */
-export function distributeKhatmahReviewToPrayers(profile: UserProfile): DistributedSlot[] {
-  const pages: number[] = [];
-
-  if (profile.reviewOnlyDailyAmountType === "surah_ayah") {
-    const surahId = profile.reviewOnlySurahId || 2;
-    const fromAyah = profile.reviewOnlyFromAyah || 1;
-    const toAyah = profile.reviewOnlyToAyah || 100;
-    const startP = getPageForAyah(surahId, fromAyah);
-    const endP = getPageForAyah(surahId, toAyah);
-    const minP = Math.min(startP, endP);
-    const maxP = Math.max(startP, endP);
-    for (let p = minP; p <= maxP; p++) {
-      pages.push(p);
-    }
-  } else {
-    const startPage = profile.reviewOnlyCurrentPage || 1;
-    const amount = profile.reviewOnlyDailyAmountValue || 20; // v2.1: distinct amount for khatmah review only
-    const direction = profile.reviewOnlyDirection || "forward";
-
-    if (direction === "forward") {
-      for (let i = 0; i < amount; i++) {
-        let p = startPage + i;
-        if (p > 604) p = ((p - 1) % 604) + 1;
-        pages.push(p);
-      }
-    } else {
-      for (let i = 0; i < amount; i++) {
-        let p = startPage - i;
-        if (p < 1) p = 604 + (p % 604);
-        pages.push(p);
-      }
-    }
-  }
-
-  // Generate prayer slots in rotated chronological order
-  const slots = buildPrayerSlots(profile);
-
-  if (slots.length === 0 || pages.length === 0) return [];
-
-  // Split pages array into chunks for slots
-  const distributed: DistributedSlot[] = [];
-  const totalPages = pages.length;
+  const totalItems = contentItems.length;
   const numSlots = slots.length;
 
   for (let sIdx = 0; sIdx < numSlots; sIdx++) {
     const slot = slots[sIdx];
-    
-    // Calculate page range index slice for this slot
-    const startIdx = Math.floor((sIdx * totalPages) / numSlots);
-    const endIdx = Math.floor(((sIdx + 1) * totalPages) / numSlots);
-    
-    const slotPages = pages.slice(startIdx, endIdx);
-    if (slotPages.length > 0) {
-      let contentStr = "";
-      if (slotPages.length === 1) {
-        const sName = getSurahForPage(slotPages[0]);
-        contentStr = `الصحيفة ${slotPages[0]} (سورة ${sName})`;
-      } else {
-        const firstP = slotPages[0];
-        const lastP = slotPages[slotPages.length - 1];
-        const sFirstName = getSurahForPage(firstP);
-        const sLastName = getSurahForPage(lastP);
-        const surahText = sFirstName === sLastName ? `سورة ${sFirstName}` : `سورة ${sFirstName} إلى ${sLastName}`;
-        contentStr = `الصحائف من ${firstP} إلى ${lastP} (${surahText})`;
-      }
+
+    // Chunking logic: find which items belong to this slot
+    const startIdx = Math.floor((sIdx * totalItems) / numSlots);
+    const endIdx = Math.floor(((sIdx + 1) * totalItems) / numSlots);
+
+    const slotItems = contentItems.slice(startIdx, endIdx);
+    if (slotItems.length > 0) {
+      // If multiple items in one slot, join them nicely
+      const contentStr = slotItems.join(" + ");
 
       distributed.push({
-        id: `khatmah-dist-${sIdx}`,
+        id: `${idPrefix}-${sIdx}`,
         parentPrayer: slot.parentPrayer,
         prayerName: slot.prayerName,
         prayerType: slot.type,
@@ -329,6 +233,61 @@ export function distributeKhatmahReviewToPrayers(profile: UserProfile): Distribu
       });
     }
   }
-
   return distributed;
+}
+
+/**
+ * Distributes today's available reviews across the allowed Rak'ahs.
+ */
+export function distributeReviewsToPrayers(
+  reviewTasks: ScheduledTask[],
+  profile: UserProfile
+): DistributedSlot[] {
+  const activeReviews = reviewTasks.filter(t => t.type === "review" && !t.isCompleted);
+  if (activeReviews.length === 0) return [];
+
+  const reviewPartitions: string[] = [];
+  activeReviews.forEach(t => {
+    const sName = getSurahName(t.block.surahId);
+    const totalAyats = t.block.toAyah - t.block.fromAyah + 1;
+
+    if (totalAyats > 10) {
+      const mid = Math.floor((t.block.fromAyah + t.block.toAyah) / 2);
+      reviewPartitions.push(`سورة ${sName} (${t.block.fromAyah}-${mid})`);
+      reviewPartitions.push(`سورة ${sName} (${mid + 1}-${t.block.toAyah})`);
+    } else {
+      reviewPartitions.push(`سورة ${sName} (${t.block.fromAyah}-${t.block.toAyah})`);
+    }
+  });
+
+  return distributeContentToSlots(reviewPartitions, profile, "rev-dist");
+}
+
+/**
+ * Distributes today's Khatmah Review (Track 2) across daily prayers.
+ */
+export function distributeKhatmahReviewToPrayers(profile: UserProfile): DistributedSlot[] {
+  const pageItems: string[] = [];
+
+  if (profile.reviewOnlyDailyAmountType === "surah_ayah") {
+    const surahId = profile.reviewOnlySurahId || 2;
+    const fromAyah = profile.reviewOnlyFromAyah || 1;
+    const toAyah = profile.reviewOnlyToAyah || 100;
+    pageItems.push(`سورة ${getSurahName(surahId)} (الآيات ${fromAyah} - ${toAyah})`);
+  } else {
+    const startPage = profile.reviewOnlyCurrentPage || 1;
+    const amount = profile.reviewOnlyDailyAmountValue || 20;
+    const direction = profile.reviewOnlyDirection || "forward";
+
+    for (let i = 0; i < amount; i++) {
+      let p = direction === "forward" ? startPage + i : startPage - i;
+      if (p > 604) p = ((p - 1) % 604) + 1;
+      if (p < 1) p = 604 + (p % 604);
+
+      const sName = getSurahForPage(p);
+      pageItems.push(`ص ${p} (${sName})`);
+    }
+  }
+
+  return distributeContentToSlots(pageItems, profile, "khatmah-dist");
 }
