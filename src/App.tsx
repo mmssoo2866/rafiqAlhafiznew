@@ -11,7 +11,7 @@ import {
 } from "lucide-react";
 import { AnimatePresence } from "motion/react";
 
-import { getLocalDateKey, loadAppState, logActivity } from "./storage";
+import { getLocalDateKey, loadAppState, logActivity, DEFAULT_PROFILE } from "./storage";
 import { getTasksForDate, getCumulativeGroups, hasDay66TriggerToday } from "./scheduler";
 import { calculateTodayPrayers, distributeReviewsToPrayers, distributeKhatmahReviewToPrayers } from "./prayerEngine";
 import { useAppActions } from "./hooks/useAppActions";
@@ -63,7 +63,7 @@ export default function App() {
   // If onboarding is not completed, we show the onboarding screen and skip the dashboard logic to prevent crashes
   if (!state.onboardingCompleted) {
     const handleOnboardingSubmit = (data: any) => {
-      const updated = { ...state, profile: { ...data }, onboardingCompleted: true };
+      const updated = { ...state, profile: { ...DEFAULT_PROFILE, ...data }, onboardingCompleted: true };
       updateState(logActivity(updated, "التهيئة", "تم إعداد التطبيق بنجاح."));
     };
     return <Onboarding onSubmit={handleOnboardingSubmit} />;

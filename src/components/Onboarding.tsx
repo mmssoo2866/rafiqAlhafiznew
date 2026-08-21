@@ -15,6 +15,7 @@ const Onboarding: React.FC<OnboardingProps> = ({ onSubmit }) => {
     onSubmit({
       name: (data.get("name") as string) || "عبد الله",
       gender: (data.get("gender") as "male" | "female") || "male",
+      appTrack: (data.get("appTrack") as "hifz_and_review" | "review_only") || "hifz_and_review",
       prayerRole: (data.get("prayerRole") as "imam" | "maamoom") || "imam",
       useSunnah: data.get("useSunnah") === "on",
       nightPrayerRakats: Number(data.get("nightPrayerRakats")) || 8,
@@ -48,12 +49,22 @@ const Onboarding: React.FC<OnboardingProps> = ({ onSubmit }) => {
 
           <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1 text-right">
+              <label className="text-sm font-semibold text-gray-700">مسار الاستخدام</label>
+              <select name="appTrack" className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-gray-50 font-bold text-emerald-900">
+                <option value="hifz_and_review">حفظ جديد ومراجعة</option>
+                <option value="review_only">مراجعة فقط (ختمة)</option>
+              </select>
+            </div>
+            <div className="space-y-1 text-right">
               <label className="text-sm font-semibold text-gray-700">الجنس</label>
               <select name="gender" className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-gray-50">
                 <option value="male">ذكر</option>
                 <option value="female">أنثى</option>
               </select>
             </div>
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1 text-right">
               <label className="text-sm font-semibold text-gray-700">دور الصلاة</label>
               <select name="prayerRole" className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-gray-50">
@@ -61,9 +72,6 @@ const Onboarding: React.FC<OnboardingProps> = ({ onSubmit }) => {
                 <option value="maamoom">مأموم (أستمع جهراً وأقرأ سراً)</option>
               </select>
             </div>
-          </div>
-
-          <div className="grid grid-cols-2 gap-4">
             <div className="space-y-1 text-right">
               <label className="text-sm font-semibold text-gray-700">ركعات قيام الليل</label>
               <select name="nightPrayerRakats" defaultValue="8" className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-gray-50">
@@ -73,13 +81,14 @@ const Onboarding: React.FC<OnboardingProps> = ({ onSubmit }) => {
                 <option value="11">11 ركعة</option>
               </select>
             </div>
-            <div className="space-y-1 text-right">
-              <label className="text-sm font-semibold text-gray-700">اتجاه خطة الحفظ</label>
-              <select name="direction" className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-gray-50">
-                <option value="forward">من الفاتحة إلى الناس</option>
-                <option value="backward">من الناس إلى الفاتحة (الحفظ العكسي)</option>
-              </select>
-            </div>
+          </div>
+
+          <div className="space-y-1 text-right">
+            <label className="text-sm font-semibold text-gray-700">اتجاه خطة الحفظ</label>
+            <select name="direction" className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-gray-50">
+              <option value="forward">من الفاتحة إلى الناس</option>
+              <option value="backward">من الناس إلى الفاتحة (الحفظ العكسي)</option>
+            </select>
           </div>
 
           <div className="flex items-center space-x-2 space-x-reverse pt-2">
