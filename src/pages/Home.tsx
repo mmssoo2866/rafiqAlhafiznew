@@ -399,12 +399,7 @@ const Home: React.FC<HomeProps> = ({
                   >
                     {[1, 2, 5, 10, 20, 30, 40, 60].map(v => <option key={v} value={v} className="bg-emerald-900">{v} صفحات</option>)}
                   </select>
-                </div>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
+                </div></div></div></div> {nextPrayerFocusCard} <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
             <h3 className="text-lg font-bold text-emerald-950 flex items-center gap-2">
               <CheckCircle className="w-5 h-5 text-emerald-600" />
               <span>الإنجاز اليومي</span>
@@ -571,3 +566,4 @@ const Home: React.FC<HomeProps> = ({
 };
 
 export default Home;
+
