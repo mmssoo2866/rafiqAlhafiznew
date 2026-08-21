@@ -36,6 +36,14 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
           </div>
 
           <div className="space-y-2">
+            <label className="text-xs font-bold text-gray-600">مسار الاستخدام الحالي</label>
+            <select value={userProfile.appTrack} onChange={(e) => updateProfile({ appTrack: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-emerald-50 text-sm font-bold text-emerald-900 focus:ring-2 focus:ring-emerald-600 outline-none">
+              <option value="hifz_and_review">حفظ جديد ومراجعة</option>
+              <option value="review_only">مراجعة فقط (ختمة)</option>
+            </select>
+          </div>
+
+          <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600">نقطة بداية المراجعة اليومية</label>
             <select value={userProfile.reviewStartPoint} onChange={(e) => updateProfile({ reviewStartPoint: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
               <option value="duha">الضحى</option>
@@ -54,20 +62,6 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
             <select value={userProfile.prayerRole} onChange={(e) => updateProfile({ prayerRole: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
               <option value="imam">إمام (مراجعة جهرية وسرية)</option>
               <option value="maamoom">مأموم (أستمع جهراً ومراجعة سرية)</option>
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-600">مقدار المراجعة لـ (مسار المراجعة فقط)</label>
-            <select value={userProfile.reviewOnlyDailyAmountValue} onChange={(e) => updateProfile({ reviewOnlyDailyAmountValue: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
-              {[1, 2, 5, 10, 20, 40, 60].map(v => <option key={v} value={v}>{v} صفحة</option>)}
-            </select>
-          </div>
-
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-600">مقدار المراجعة لـ (المراجعة الرئيسية)</label>
-            <select value={userProfile.mainReviewDailyAmountValue} onChange={(e) => updateProfile({ mainReviewDailyAmountValue: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
-              {[5, 10, 20, 30, 40].map(v => <option key={v} value={v}>{v} صفحة</option>)}
             </select>
           </div>
 
