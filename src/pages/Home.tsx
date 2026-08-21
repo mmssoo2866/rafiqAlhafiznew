@@ -53,6 +53,31 @@ const Home: React.FC<HomeProps> = ({
   const quranCompletionPercent = ((memorizedVersesCount / 6236) * 100).toFixed(1);
   const totalCompletedReviewsCount = Object.values(state.completedReviews).reduce((sum: number, arr) => sum + (arr as string[]).length, 0);
 
+  // Time-based Focus logic: Find current/next prayer
+  const now = new Date();
+  const getActivePrayer = () => {
+    // 1. Check standard prayers from adhan
+    const upcoming = prayerTimesList.find(p => p.time > now);
+    if (!upcoming) return "العشاء"; // Default to Isha/Qiyam at night
+
+    // 2. Early morning check
+    const fajr = prayerTimesList.find(p => p.name === "Fajr");
+    if (fajr && now < fajr.time) return "الفجر";
+
+    // 3. Mapping
+    const mapping: Record<string, string> = {
+      "Fajr": "الفجر",
+      "Dhuhr": "الظهر",
+      "Asr": "العصر",
+      "Maghrib": "المغرب",
+      "Isha": "العشاء"
+    };
+    return mapping[upcoming.name] || "الظهر";
+  };
+
+  const activePrayerName = getActivePrayer();
+  const activeSlots = distributionSlots.filter(s => s.parentPrayer === activePrayerName);
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -60,6 +85,73 @@ const Home: React.FC<HomeProps> = ({
       exit={{ opacity: 0, y: -10 }}
       className="space-y-6"
     >
+      {/* 1. DYNAMIC FOCUS CARD: Shows review for CURRENT/NEXT prayer */}
+      {distributionSlots.length > 0 && (
+        <div className="bg-emerald-900 text-white rounded-3xl p-6 shadow-xl relative overflow-hidden border border-emerald-800">
+          <div className="absolute top-0 left-0 w-32 h-32 bg-amber-500/5 rounded-full -ml-16 -mt-16"></div>
+          <div className="relative z-10 space-y-4">
+            <div className="flex justify-between items-start">
+              <div className="flex items-center gap-2">
+                <div className="p-2 bg-amber-500/20 rounded-xl border border-amber-500/30">
+                  <Clock className="w-5 h-5 text-amber-400" />
+                </div>
+                <div>
+                  <h3 className="font-bold text-sm text-emerald-100">ورد الصلاة القادمة</h3>
+                  <p className="text-xl font-bold font-serif">{activePrayerName}</p>
+                </div>
+              </div>
+              <div className="text-left">
+                <span className="text-[10px] bg-emerald-800 px-2 py-1 rounded-lg border border-emerald-700 font-bold text-emerald-300 uppercase">الآن</span>
+              </div>
+            </div>
+
+            <div className="space-y-3 pt-2">
+              {activeSlots.length === 0 ? (
+                <div className="bg-emerald-950/40 p-4 rounded-2xl border border-emerald-800/50 text-center">
+                  <p className="text-xs text-emerald-300 italic">لا يوجد ورد مراجعة مخصص لصلاة {activePrayerName} حالياً.</p>
+                </div>
+              ) : (
+                activeSlots.map((slot) => (
+                  <div key={slot.id} className="bg-white/10 backdrop-blur-sm p-3 rounded-2xl border border-white/5 flex items-center justify-between group hover:bg-white/20 transition-all">
+                    <div className="flex items-center gap-3">
+                      <div className="w-8 h-8 rounded-full bg-amber-500/20 border border-amber-500/40 flex items-center justify-center text-[10px] font-bold text-amber-300">
+                        {slot.rakahNumber}
+                      </div>
+                      <div className="text-right">
+                        <p className="text-[10px] text-emerald-300 font-bold">{slot.prayerName}</p>
+                        <h4 className="text-xs font-bold text-white">{slot.assignedContent}</h4>
+                      </div>
+                    </div>
+                    <button
+                      onClick={() => {
+                         const match = slot.assignedContent.match(/سورة ([\u0600-\u06FF]+)(?:\s+\((\d+))?/);
+                         const pageMatch = slot.assignedContent.match(/ص (\d+)/);
+                         if (pageMatch) {
+                            onToggleTab("mushaf");
+                         } else if (match) {
+                            const found = SURAHS.find(s => s.name === match[1]);
+                            if (found) onNavigateToMushaf(found.id, match[2] ? Number(match[2]) : 1);
+                         }
+                      }}
+                      className="p-2 hover:bg-amber-500 hover:text-emerald-950 rounded-xl transition-colors text-amber-400"
+                    >
+                      <BookOpen className="w-4 h-4" />
+                    </button>
+                  </div>
+                ))
+              )}
+            </div>
+
+            <button
+              onClick={() => onToggleTab("review")}
+              className="w-full py-3 bg-emerald-800/50 hover:bg-emerald-800 border border-emerald-700 rounded-2xl text-xs font-bold text-emerald-200 transition-colors"
+            >
+              عرض الجدول الكامل للمراجعة ➔
+            </button>
+          </div>
+        </div>
+      )}
+
       {/* ... Day 66 logic ... */}
       {hasDay66 && (
         <div className="bg-amber-50 border-r-4 border-amber-500 p-4 rounded-xl flex items-start space-x-3 space-x-reverse shadow-sm">
