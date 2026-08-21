@@ -76,7 +76,7 @@ const About: React.FC<AboutProps> = ({ onClose }) => {
         <div className="bg-gray-50 rounded-3xl p-8 text-center space-y-4 border border-gray-100">
           <h4 className="text-emerald-900 font-bold">للتواصل والدعم</h4>
           <p className="text-xs text-gray-500">مشروع رفيق الحافظ هو وقف خيري تقني، نسأل الله أن ينفع به حفاظ كتابه.</p>
-          <a href="https://rafiqalhafiznew-ztg9.vercel.app/" className="inline-block text-emerald-700 font-bold hover:underline">rafiq-alhafiz-api-server.vercel.app</a>
+          <a href="https://rafiqalhafiznew-ztg9.vercel.app/" className="inline-block text-emerald-700 font-bold hover:underline">rafiqalhafiznew-ztg9.vercel.app</a>
         </div>
       </div>
     </div>
