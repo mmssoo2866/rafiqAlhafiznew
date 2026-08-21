@@ -191,13 +191,36 @@ export function buildPrayerSlots(profile: UserProfile): {
 
   const blockOrder = ["fajr", "duha", "dhuhr", "asr", "maghrib", "isha", "qiyam"];
 
+  // Filter based on user enabled prayers
+  const enabledPrayers = profile.enabledPrayers || blockOrder;
+  const filteredBlockOrder = blockOrder.filter(p => enabledPrayers.includes(p));
+
   // Rotate based on user start point (main prayer names)
   const startPoint = profile.reviewStartPoint || "fajr";
-  const startIndex = blockOrder.indexOf(startPoint);
-  const rotatedBlockOrder = startIndex === -1 ? blockOrder : [
-    ...blockOrder.slice(startIndex),
-    ...blockOrder.slice(0, startIndex)
+  let startIndex = filteredBlockOrder.indexOf(startPoint);
+
+  // If the chosen start point is disabled, find the next available one in the sequence
+  if (startIndex === -1) {
+    const originalIndex = blockOrder.indexOf(startPoint);
+    for (let i = originalIndex; i < blockOrder.length; i++) {
+        if (enabledPrayers.includes(blockOrder[i])) {
+            startIndex = filteredBlockOrder.indexOf(blockOrder[i]);
+            break;
+        }
+    }
+  }
+
+  const rotatedBlockOrder = startIndex === -1 ? filteredBlockOrder : [
+    ...filteredBlockOrder.slice(startIndex),
+    ...filteredBlockOrder.slice(0, startIndex)
   ];
+
+  // Re-sort so that 'qiyam' is always the absolute end of the day's distribution
+  // This satisfies "ينتهي بصلاة الليل"
+  const finalOrder = rotatedBlockOrder.filter(p => p !== "qiyam");
+  if (enabledPrayers.includes("qiyam")) {
+    finalOrder.push("qiyam");
+  }
 
   const slots: {
     parentPrayer: "الفجر" | "الضحى" | "الظهر" | "العصر" | "المغرب" | "العشاء";
@@ -206,7 +229,7 @@ export function buildPrayerSlots(profile: UserProfile): {
     rakah: number
   }[] = [];
 
-  rotatedBlockOrder.forEach(blockKey => {
+  finalOrder.forEach(blockKey => {
     blocks[blockKey].forEach(groupKey => {
       slots.push(...groups[groupKey]);
     });

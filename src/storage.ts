@@ -48,6 +48,7 @@ export interface UserProfile {
   mainReviewDailyAmountValue?: number; // v2.1: separated from reviewOnlyDailyAmountValue
   mainReviewProgressPages?: number;
   reviewStartPoint: string;
+  enabledPrayers?: string[]; // v2.1.2: user selected prayers for review
 }
 
 export interface MemorizationBlock {
@@ -120,7 +121,8 @@ export const DEFAULT_PROFILE: UserProfile = {
   mainReviewEndSurahId: 18,
   mainReviewDailyAmountValue: 10, // Default 10 pages for main review
   mainReviewProgressPages: 0,
-  reviewStartPoint: 'fajr'
+  reviewStartPoint: 'fajr',
+  enabledPrayers: ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam']
 };
 
 export function loadAppState(): AppState {

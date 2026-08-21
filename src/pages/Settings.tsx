@@ -71,6 +71,37 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
             </select>
           </div>
         </div>
+
+        <div className="space-y-4 pt-4 border-t border-gray-100">
+          <label className="text-xs font-bold text-emerald-800">تفعيل الصلوات للمراجعة (اختر ما تريد المراجعة به)</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { id: 'fajr', name: 'الفجر' },
+              { id: 'duha', name: 'الضحى' },
+              { id: 'dhuhr', name: 'الظهر' },
+              { id: 'asr', name: 'العصر' },
+              { id: 'maghrib', name: 'المغرب' },
+              { id: 'isha', name: 'العشاء' },
+              { id: 'qiyam', name: 'صلاة الليل' }
+            ].map(p => (
+              <button
+                key={p.id}
+                onClick={() => {
+                  const current = userProfile.enabledPrayers || ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam'];
+                  const updated = current.includes(p.id) ? current.filter(x => x !== p.id) : [...current, p.id];
+                  if (updated.length > 0) updateProfile({ enabledPrayers: updated });
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                  (userProfile.enabledPrayers || []).includes(p.id)
+                  ? "bg-emerald-700 text-white border-emerald-800"
+                  : "bg-gray-50 text-gray-400 border-gray-200"
+                }`}
+              >
+                {p.name}
+              </button>
+            ))}
+          </div>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
