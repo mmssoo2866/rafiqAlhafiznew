@@ -11,6 +11,7 @@ interface ReviewProps extends PageProps {
   distributionSlots: any[];
   onUpdateReviewProgress: (idx: number) => void;
   onSetMushafPage?: (p: number) => void;
+  onToggleTab: (tab: any) => void;
 }
 
 const Review: React.FC<ReviewProps> = ({

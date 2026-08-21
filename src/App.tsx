@@ -13,6 +13,7 @@ import { AnimatePresence } from "motion/react";
 
 import { getLocalDateKey, loadAppState, logActivity, DEFAULT_PROFILE } from "./storage";
 import { getTasksForDate, getCumulativeGroups, hasDay66TriggerToday } from "./scheduler";
+import { getPageForAyah } from "./quranData";
 import { calculateTodayPrayers, distributeReviewsToPrayers, distributeKhatmahReviewToPrayers } from "./prayerEngine";
 import { useAppActions } from "./hooks/useAppActions";
 import { TabType } from "./types";
