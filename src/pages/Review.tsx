@@ -1,25 +1,29 @@
 import React from "react";
 import { motion } from "motion/react";
-import { RotateCcw, CheckCircle } from "lucide-react";
+import { RotateCcw, CheckCircle, Compass, Check, BookOpen } from "lucide-react";
 import { PageProps } from "../types";
-import { getSurahName } from "../quranData";
+import { getSurahName, SURAHS } from "../quranData";
 
 interface ReviewProps extends PageProps {
   todayTasks: any[];
   onToggleReviewComplete: (id: string) => void;
   cumulativeGroups: any[];
   distributionSlots: any[];
+  onUpdateReviewProgress: (idx: number) => void;
 }
 
 const Review: React.FC<ReviewProps> = ({
   state,
+  todayStr,
   onNavigateToMushaf,
   todayTasks,
   onToggleReviewComplete,
   cumulativeGroups,
-  distributionSlots
+  distributionSlots,
+  onUpdateReviewProgress
 }) => {
   const isReviewOnly = state.profile?.appTrack === "review_only";
+  const currentProgress = state.reviewProgress[todayStr] || 0;
 
   return (
     <motion.div
@@ -31,40 +35,64 @@ const Review: React.FC<ReviewProps> = ({
       <div className="bg-emerald-800 text-white rounded-3xl p-6 shadow-md space-y-2">
         <h3 className="text-xl font-serif font-bold flex items-center gap-2">
           <RotateCcw className="w-6 h-6" />
-          <span>{isReviewOnly ? "توزيع ورد الختمة على الصلوات" : "هيكل المراجعة الذكية"}</span>
+          <span>{isReviewOnly ? "توزيع ورد الختمة على الصلوات" : "هيكل المراجعة والركعات"}</span>
         </h3>
         <p className="text-xs text-emerald-100 leading-relaxed">
-          {isReviewOnly ? "توزيع صفحات الختمة بشكل متساوٍ على ركعات اليوم." : "توزيع المراجعة على 66 يوماً لضمان تثبيت الذاكرة بعيدة المدى."}
+          {isReviewOnly ? "توزيع صفحات الختمة بشكل متساوٍ على ركعات اليوم." : "نظام المراجعة المتباعدة الموزع آلياً على ركعات صلواتك."}
         </p>
       </div>
 
-      {isReviewOnly ? (
-        /* SPECIAL VIEW FOR REVIEW ONLY TRACK */
-        <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
-          <h4 className="text-lg font-serif font-bold text-emerald-900 border-b pb-2">📋 جدول توزيع الورد اليومي</h4>
-          <div className="space-y-4">
-            {distributionSlots.length === 0 ? (
-              <p className="text-center text-gray-400 py-8">لا يوجد ورد محدد لهذا اليوم.</p>
-            ) : (
-              distributionSlots.map((slot) => (
-                <div key={slot.id} className="p-4 rounded-2xl bg-gray-50 border border-gray-100 flex items-center justify-between gap-4">
-                  <div className="flex items-center gap-3">
-                    <div className="w-10 h-10 bg-white rounded-xl border border-emerald-100 flex items-center justify-center font-bold text-emerald-800 text-xs shadow-sm">
-                      {slot.parentPrayer}
+      {/* RAKAH DISTRIBUTION MAP (Moved from Prayers Page) */}
+      <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
+        <h3 className="text-lg font-serif font-bold text-emerald-900 border-b pb-3 flex justify-between items-center">
+          <span>📿 خريطة توزيع الركعات اليومية</span>
+          <Compass className="w-5 h-5 text-emerald-600" />
+        </h3>
+
+        {distributionSlots.length === 0 ? (
+          <p className="text-xs text-gray-400 text-center py-8">لا يوجد ورد مراجعة موزع على الصلوات حالياً.</p>
+        ) : (
+          <div className="space-y-6">
+            <div className="bg-emerald-50/50 p-4 rounded-2xl border border-emerald-100 flex justify-between items-center">
+              <span className="text-[10px] font-bold text-emerald-800">إنجاز ركعات المراجعة: {currentProgress} / {distributionSlots.length}</span>
+              <div className="w-32 h-1.5 bg-white rounded-full overflow-hidden border border-emerald-100">
+                <div className="h-full bg-emerald-600 transition-all" style={{ width: `${(currentProgress / distributionSlots.length) * 100}%` }}></div>
+              </div>
+            </div>
+
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-3">
+              {distributionSlots.map((slot, idx) => {
+                const isCompleted = currentProgress > idx;
+                const isCurrent = currentProgress === idx;
+                return (
+                  <div key={slot.id} className={`p-3 rounded-2xl border transition-all flex justify-between gap-3 ${isCompleted ? "bg-emerald-50/30 opacity-60" : isCurrent ? "bg-white border-amber-500 shadow-sm ring-1 ring-amber-500/10 scale-[1.01]" : "bg-gray-50 border-gray-100"}`}>
+                    <div className="space-y-1">
+                      <div className="flex items-center gap-2">
+                        <span className="text-[11px] font-bold text-gray-700">{slot.prayerName}</span>
+                        <span className="text-[9px] text-gray-400">ركعة {slot.rakahNumber}</span>
+                      </div>
+                      <p className="text-[11px] font-bold text-emerald-900 bg-white/50 px-2 py-1 rounded-lg border border-emerald-50 mt-1">{slot.assignedContent}</p>
                     </div>
-                    <div className="text-right">
-                      <p className="text-[10px] font-bold text-emerald-700">{slot.prayerName}</p>
-                      <h5 className="text-xs font-bold text-gray-800 mt-0.5">{slot.assignedContent}</h5>
+                    <div className="flex items-center gap-1">
+                      <button onClick={() => {
+                        const match = slot.assignedContent.match(/سورة ([\u0600-\u06FF]+)/);
+                        if (match) {
+                          const found = SURAHS.find(s => s.name === match[1]);
+                          if (found) onNavigateToMushaf(found.id, 1);
+                        }
+                      }} className="p-1.5 bg-white border border-gray-200 rounded-lg text-emerald-700"><BookOpen className="w-3.5 h-3.5" /></button>
+                      <button onClick={() => onUpdateReviewProgress(isCompleted ? idx : idx + 1)} className={`p-1.5 rounded-lg border transition-all ${isCompleted ? "bg-emerald-600 border-emerald-700 text-white" : "bg-white text-gray-400 border-gray-300"}`}><Check className="w-3.5 h-3.5" /></button>
                     </div>
                   </div>
-                  <div className="text-[10px] bg-emerald-100 text-emerald-800 px-2 py-1 rounded-lg font-bold">ركعة {slot.rakahNumber}</div>
-                </div>
-              ))
-            )}
+                );
+              })}
+            </div>
           </div>
-        </div>
-      ) : (
-        /* ORIGINAL TRACK 1 VIEW */
+        )}
+      </div>
+
+      {!isReviewOnly && (
+        /* ORIGINAL TRACK 1 REVIEW LISTS (Only for Hifz Track) */
         <>
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
