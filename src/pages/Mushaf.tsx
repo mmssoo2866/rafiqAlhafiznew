@@ -12,6 +12,17 @@ interface MushafProps extends PageProps {
 }
 
 const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, mushafViewMode, setMushafViewMode, onUpdateState }) => {
+  const currentSurahId = SURAHS.slice().reverse().find(s => mushafPage >= s.startPage)?.id || 1;
+  const currentSurah = getSurahById(currentSurahId);
+  const [inputAyah, setInputAyah] = React.useState<number>(1);
+
+  const handleAyahChange = (ayah: number) => {
+    const safeAyah = Math.max(1, Math.min(currentSurah?.ayahs || 1, ayah));
+    setInputAyah(safeAyah);
+    const page = getPageForAyah(currentSurahId, safeAyah);
+    setMushafPage(page);
+  };
+
   return (
     <motion.div
       initial={{ opacity: 0, y: 10 }}
@@ -28,20 +39,41 @@ const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, musha
           </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+        <div className="grid grid-cols-2 md:grid-cols-4 gap-4">
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-gray-400">انتقال للسورة</label>
+            <label className="text-[10px] font-bold text-gray-400">السورة</label>
             <select
-              value={SURAHS.slice().reverse().find(s => mushafPage >= s.startPage)?.id || 1}
-              onChange={(e) => setMushafPage(getSurahById(Number(e.target.value))?.startPage || 1)}
+              value={currentSurahId}
+              onChange={(e) => {
+                const sId = Number(e.target.value);
+                const s = getSurahById(sId);
+                if (s) {
+                  setMushafPage(s.startPage);
+                  setInputAyah(1);
+                }
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-xs font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
             >
               {SURAHS.map(s => <option key={s.id} value={s.id}>{s.id}. {s.name}</option>)}
             </select>
           </div>
           <div className="space-y-1">
-            <label className="text-[10px] font-bold text-gray-400">رقم الصفحة (1-610)</label>
-            <input type="number" value={mushafPage} onChange={(e) => setMushafPage(Math.max(1, Math.min(610, Number(e.target.value))))} className="w-full px-3 py-2 border border-gray-300 rounded-xl text-center font-mono font-bold" />
+            <label className="text-[10px] font-bold text-gray-400">الآية (1-{currentSurah?.ayahs})</label>
+            <input
+              type="number"
+              value={inputAyah}
+              onChange={(e) => handleAyahChange(Number(e.target.value))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-center font-mono font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
+            />
+          </div>
+          <div className="space-y-1">
+            <label className="text-[10px] font-bold text-gray-400">رقم الصفحة</label>
+            <input
+              type="number"
+              value={mushafPage}
+              onChange={(e) => setMushafPage(Math.max(1, Math.min(610, Number(e.target.value))))}
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl text-center font-mono font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
+            />
           </div>
           <div className="flex items-end">
             <button
