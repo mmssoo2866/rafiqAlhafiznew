@@ -32,9 +32,9 @@ const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, musha
           <div className="space-y-1">
             <label className="text-[10px] font-bold text-gray-400">انتقال للسورة</label>
             <select
-              value={SURAHS.find(s => mushafPage >= s.startPage)?.id || 1}
+              value={SURAHS.slice().reverse().find(s => mushafPage >= s.startPage)?.id || 1}
               onChange={(e) => setMushafPage(getSurahById(Number(e.target.value))?.startPage || 1)}
-              className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-xs font-bold"
+              className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-xs font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
             >
               {SURAHS.map(s => <option key={s.id} value={s.id}>{s.id}. {s.name}</option>)}
             </select>
@@ -74,9 +74,25 @@ const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, musha
               }}
             />
           ) : (
-            <div className="p-4 text-center space-y-4">
-              <span className="text-4xl opacity-10">📖</span>
-              <p className="text-gray-400 font-bold">يرجى استخدام الوضع "المصور" للقراءة، أو اختيار سورة من القائمة.</p>
+            <div className="w-full h-full p-4 overflow-y-auto custom-scrollbar">
+              <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 gap-3">
+                {SURAHS.map((s) => (
+                  <button
+                    key={s.id}
+                    onClick={() => {
+                      setMushafPage(s.startPage);
+                      setMushafViewMode("image");
+                    }}
+                    className="p-3 bg-gray-50 hover:bg-emerald-50 border border-gray-200 hover:border-emerald-200 rounded-2xl transition-all text-right group"
+                  >
+                    <div className="flex justify-between items-center mb-1">
+                      <span className="text-[10px] text-gray-400 group-hover:text-emerald-600 font-bold">{s.id}</span>
+                      <span className="text-[10px] bg-white px-2 py-0.5 rounded-lg border border-gray-100 group-hover:border-emerald-100 text-gray-500 group-hover:text-emerald-700">ص {s.startPage}</span>
+                    </div>
+                    <span className="text-sm font-bold text-gray-800 group-hover:text-emerald-900">سورة {s.name}</span>
+                  </button>
+                ))}
+              </div>
             </div>
           )}
         </div>
