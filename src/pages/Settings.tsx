@@ -43,17 +43,34 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
             </select>
           </div>
 
-          <div className="space-y-2">
-            <label className="text-xs font-bold text-gray-600">نقطة بداية المراجعة اليومية</label>
-            <select value={userProfile.reviewStartPoint} onChange={(e) => updateProfile({ reviewStartPoint: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
-              <option value="fajr">الفجر (+ السنة)</option>
-              <option value="duha">الضحى</option>
-              <option value="dhuhr">الظهر (+ السنن)</option>
-              <option value="asr">العصر (+ السنة)</option>
-              <option value="maghrib">المغرب (+ السنة)</option>
-              <option value="isha">العشاء (+ السنة)</option>
-              <option value="qiyam">صلاة الليل / الوتر</option>
-            </select>
+          <div className="space-y-4">
+            <label className="text-xs font-bold text-gray-600">الصلوات المتاحة للمراجعة (ضع علامة صح لما تريد استخدامه)</label>
+            <div className="grid grid-cols-2 gap-3 bg-gray-50 p-4 rounded-2xl border border-gray-100">
+              {[
+                { id: 'fajr', name: 'الفجر' },
+                { id: 'duha', name: 'الضحى' },
+                { id: 'dhuhr', name: 'الظهر' },
+                { id: 'asr', name: 'العصر' },
+                { id: 'maghrib', name: 'المغرب' },
+                { id: 'isha', name: 'العشاء' },
+                { id: 'qiyam', name: 'صلاة الليل' }
+              ].map(p => (
+                <div key={p.id} className="flex items-center gap-3">
+                  <input
+                    type="checkbox"
+                    id={`p-${p.id}`}
+                    checked={(userProfile.enabledPrayers || ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam']).includes(p.id)}
+                    onChange={() => {
+                      const current = userProfile.enabledPrayers || ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam'];
+                      const updated = current.includes(p.id) ? current.filter(x => x !== p.id) : [...current, p.id];
+                      if (updated.length > 0) updateProfile({ enabledPrayers: updated });
+                    }}
+                    className="w-5 h-5 text-emerald-600 border-gray-300 rounded focus:ring-emerald-500"
+                  />
+                  <label htmlFor={`p-${p.id}`} className="text-sm font-bold text-gray-700 select-none cursor-pointer">{p.name}</label>
+                </div>
+              ))}
+            </div>
           </div>
 
           <div className="space-y-2">

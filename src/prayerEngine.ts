@@ -191,13 +191,10 @@ export function buildPrayerSlots(profile: UserProfile): {
 
   const blockOrder = ["fajr", "duha", "dhuhr", "asr", "maghrib", "isha", "qiyam"];
 
-  // Logic: "بداية المراجعة في هذا اليوم تكون حيث اختار المستخدم بحيث يكون الخيار ساري على هذه الصلاة وما يتبعها"
-  // Instead of rotating, we simply slice from the start point to the end.
-  const startPoint = profile.reviewStartPoint || "fajr";
-  const startIndex = blockOrder.indexOf(startPoint);
-
-  // Take everything from the starting point until the absolute end (qiyam)
-  const finalOrder = startIndex === -1 ? blockOrder : blockOrder.slice(startIndex);
+  // Logic: "للمستخدم حرية اختيار الصلوات وتجاوز مالا يريد المراجعة بها"
+  // We use the enabledPrayers array from the profile.
+  const enabledPrayers = profile.enabledPrayers || blockOrder;
+  const finalOrder = blockOrder.filter(p => enabledPrayers.includes(p));
 
   const slots: {
     parentPrayer: "الفجر" | "الضحى" | "الظهر" | "العصر" | "المغرب" | "العشاء";
