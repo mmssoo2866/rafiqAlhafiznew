@@ -27,6 +27,7 @@ interface HomeProps extends PageProps {
   hasDay66: boolean;
   distributionSlots: any[];
   onCompleteKhatmahReview: () => void;
+  onUpdateProfile: (changes: any) => void;
 }
 
 const Home: React.FC<HomeProps> = ({
@@ -44,7 +45,8 @@ const Home: React.FC<HomeProps> = ({
   onCompleteDay66,
   hasDay66,
   distributionSlots,
-  onCompleteKhatmahReview
+  onCompleteKhatmahReview,
+  onUpdateProfile
 }) => {
   const userProfile = state.profile!;
   const memorizedVersesCount = state.blocks.reduce((sum, b) => sum + (b.toAyah - b.fromAyah + 1), 0);
@@ -58,7 +60,7 @@ const Home: React.FC<HomeProps> = ({
       exit={{ opacity: 0, y: -10 }}
       className="space-y-6"
     >
-      {/* DAY 66 ALERT */}
+      {/* ... Day 66 logic ... */}
       {hasDay66 && (
         <div className="bg-amber-50 border-r-4 border-amber-500 p-4 rounded-xl flex items-start space-x-3 space-x-reverse shadow-sm">
           <div className="p-1 bg-amber-500/10 rounded-lg text-amber-600">
@@ -87,38 +89,87 @@ const Home: React.FC<HomeProps> = ({
       {userProfile.appTrack === "review_only" ? (
         /* TRACK 2: REVIEW ONLY HOME VIEW */
         <div className="space-y-6">
-          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-6">
-            <div className="flex flex-col md:flex-row md:items-center justify-between gap-4 border-b border-gray-100 pb-4">
-              <div>
-                <div className="flex items-center gap-2">
-                  <span className="px-2.5 py-0.5 bg-blue-100 text-blue-900 font-bold text-xs rounded-full">مسار المراجعة فقط</span>
+          <div className="bg-emerald-900 text-white rounded-3xl p-8 shadow-xl relative overflow-hidden">
+            <div className="absolute top-0 right-0 w-32 h-32 bg-amber-500/10 rounded-full -mr-16 -mt-16"></div>
+            <div className="relative z-10 space-y-4">
+              <div className="flex items-center gap-3">
+                <div className="p-3 bg-amber-500/20 rounded-2xl border border-amber-500/30">
+                  <Activity className="w-6 h-6 text-amber-300" />
                 </div>
-                <h3 className="text-xl font-serif font-bold text-gray-800 mt-2">
-                  {userProfile.reviewOnlyDailyAmountType === "surah_ayah"
-                    ? `مقرر مراجعة اليوم: سورة ${getSurahById(userProfile.reviewOnlySurahId || 2)?.name || "البقرة"}`
-                    : `مقرر مراجعة اليوم: الصحيفة ${userProfile.reviewOnlyCurrentPage || 1} من 610`}
-                </h3>
+                <div>
+                  <h3 className="text-xl font-bold font-serif">لوحة التحكم (مسار المراجعة)</h3>
+                  <p className="text-xs text-emerald-200">إدارة ورد الختمة اليومي</p>
+                </div>
               </div>
-              <button
-                onClick={() => onToggleTab("mushaf")}
-                className="px-4 py-2.5 bg-emerald-50 text-emerald-800 font-bold text-xs rounded-xl flex items-center gap-2 border border-emerald-200"
-              >
-                <BookOpen className="w-4 h-4" />
-                فتح المصحف
-              </button>
-            </div>
 
-            <div className="bg-emerald-50/70 p-5 rounded-2xl border border-emerald-200 flex flex-col md:flex-row items-center justify-between gap-4">
-              <div className="text-right">
-                <span className="text-[10px] font-bold text-emerald-800 bg-emerald-200/80 px-2 py-0.5 rounded">ورد اليوم المعتمد</span>
-                <h4 className="text-lg font-bold text-emerald-950 mt-1">مراجعة الورد اليومي</h4>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4 pt-2">
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-emerald-300 uppercase">نقطة البداية الحالية</label>
+                  <div className="flex gap-2">
+                    <input
+                      type="number"
+                      value={userProfile.reviewOnlyCurrentPage}
+                      onChange={(e) => onUpdateProfile({ reviewOnlyCurrentPage: Number(e.target.value) })}
+                      className="bg-emerald-800/50 border border-emerald-700 rounded-xl px-4 py-2 w-full font-bold focus:ring-2 focus:ring-amber-500 outline-none"
+                    />
+                    <button onClick={() => onToggleTab("mushaf")} className="bg-amber-500 text-emerald-950 p-2 rounded-xl hover:bg-amber-400 transition"><BookOpen className="w-5 h-5" /></button>
+                  </div>
+                </div>
+                <div className="space-y-2">
+                  <label className="text-[10px] font-bold text-emerald-300 uppercase">مقدار الورد اليومي (صفحات)</label>
+                  <select
+                    value={userProfile.reviewOnlyDailyAmountValue}
+                    onChange={(e) => onUpdateProfile({ reviewOnlyDailyAmountValue: Number(e.target.value) })}
+                    className="bg-emerald-800/50 border border-emerald-700 rounded-xl px-4 py-2 w-full font-bold outline-none"
+                  >
+                    {[1, 2, 5, 10, 20, 30, 40, 60].map(v => <option key={v} value={v} className="bg-emerald-900">{v} صفحات</option>)}
+                  </select>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
+            <h3 className="text-lg font-bold text-emerald-950 flex items-center gap-2">
+              <CheckCircle className="w-5 h-5 text-emerald-600" />
+              <span>الإنجاز اليومي</span>
+            </h3>
+            <div className="bg-emerald-50/70 p-6 rounded-2xl border border-emerald-100 flex flex-col md:flex-row items-center justify-between gap-6">
+              <div className="text-center md:text-right">
+                 <p className="text-sm text-emerald-800 font-medium">مقرر مراجعة اليوم</p>
+                 <h4 className="text-xl font-bold text-emerald-950 mt-1">
+                   {userProfile.reviewOnlyDirection === "forward" ? "من" : "للخلف من"} الصفحة {userProfile.reviewOnlyCurrentPage}
+                 </h4>
               </div>
               <button
                 onClick={onCompleteKhatmahReview}
-                className="px-6 py-3 bg-emerald-700 text-white rounded-2xl font-bold text-sm shadow-md hover:bg-emerald-800 transition"
+                disabled={state.profile?.reviewOnlyCompletedDates?.includes(todayStr)}
+                className={`px-8 py-4 rounded-2xl font-bold text-lg shadow-lg transition-all ${
+                  state.profile?.reviewOnlyCompletedDates?.includes(todayStr)
+                  ? "bg-emerald-100 text-emerald-700 cursor-not-allowed"
+                  : "bg-emerald-700 text-white hover:bg-emerald-800 hover:scale-[1.02]"
+                }`}
               >
-                إتمام ورد المراجعة اليوم 🌟
+                {state.profile?.reviewOnlyCompletedDates?.includes(todayStr) ? "تم إتمام الورد اليوم ✨" : "إتمام ورد المراجعة اليوم ✅"}
               </button>
+            </div>
+          </div>
+
+          <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
+            <div className="flex items-center justify-between border-b pb-3">
+              <h3 className="text-lg font-serif font-bold text-emerald-900">🕌 مواقيت الصلاة</h3>
+              <button onClick={onDetectLocation} disabled={gpsLoading} className="p-1 px-3 bg-emerald-50 text-emerald-700 rounded-xl text-xs flex items-center gap-1 transition">
+                <Compass className={`w-3.5 h-3.5 ${gpsLoading ? "animate-spin" : ""}`} />
+                <span>تحديث GPS</span>
+              </button>
+            </div>
+            <div className="grid grid-cols-2 md:grid-cols-5 gap-3">
+              {prayerTimesList.map((p) => (
+                <div key={p.name} className="flex flex-col items-center justify-center p-3 rounded-2xl bg-gray-50 border border-gray-100">
+                  <span className="text-[10px] text-gray-500 font-bold">{p.arabicName}</span>
+                  <span className="text-sm font-mono font-bold text-emerald-900">{p.time.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}</span>
+                </div>
+              ))}
             </div>
           </div>
         </div>

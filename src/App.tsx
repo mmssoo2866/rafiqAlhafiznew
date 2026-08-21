@@ -82,6 +82,10 @@ export default function App() {
 
   const commonProps = { state, todayStr, onUpdateState: updateState, onNavigateToMushaf, onToggleTab: setActiveTab };
 
+  const updateProfile = (changes: any) => {
+    updateState({ ...state, profile: { ...userProfile, ...changes } });
+  };
+
   return (
     <div className="min-h-screen bg-[#f4f7f5] text-gray-800 font-sans flex flex-col antialiased select-none" dir="rtl">
 
@@ -116,9 +120,9 @@ export default function App() {
 
       <main className="flex-1 max-w-6xl w-full mx-auto p-4 overflow-y-auto pb-24">
         <AnimatePresence mode="wait">
-          {activeTab === "home" && <Home {...commonProps} onDetectLocation={handleDetectLocation} gpsLoading={gpsLoading} prayerTimesList={prayerTimesList} todayTasks={todayTasks} repetitions={state.repetitions} onDecrementRepetition={handleDecrementRepetition} onToggleReviewComplete={handleToggleReviewComplete} onCompleteDay66={handleCompleteDay66} hasDay66={hasDay66TriggerToday(state, todayStr)} distributionSlots={distributionSlots} onCompleteKhatmahReview={handleCompleteKhatmahReviewToday} />}
+          {activeTab === "home" && <Home {...commonProps} onDetectLocation={handleDetectLocation} gpsLoading={gpsLoading} prayerTimesList={prayerTimesList} todayTasks={todayTasks} repetitions={state.repetitions} onDecrementRepetition={handleDecrementRepetition} onToggleReviewComplete={handleToggleReviewComplete} onCompleteDay66={handleCompleteDay66} hasDay66={hasDay66TriggerToday(state, todayStr)} distributionSlots={distributionSlots} onCompleteKhatmahReview={handleCompleteKhatmahReviewToday} onUpdateProfile={updateProfile} />}
           {activeTab === "hifz" && <Hifz {...commonProps} newHifz={newHifz} setNewHifz={setNewHifz} onAddHifz={(e) => { e.preventDefault(); handleAddHifz(newHifz.surahId, newHifz.fromAyah, newHifz.toAyah, newHifz.repetitions); }} onDeleteBlock={handleDeleteBlock} onToggleBlockStatus={handleToggleBlockStatus} deletingBlockId={deletingBlockId} setDeletingBlockId={setDeletingBlockId} />}
-          {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} />}
+          {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} distributionSlots={distributionSlots} />}
           {activeTab === "prayers" && <Prayers {...commonProps} distributionSlots={distributionSlots} onUpdateReviewProgress={handleUpdateReviewProgress} />}
           {activeTab === "mushaf" && <Mushaf {...commonProps} mushafPage={mushafPage} setMushafPage={setMushafPage} mushafViewMode={mushafViewMode} setMushafViewMode={setMushafViewMode} />}
           {activeTab === "settings" && <Settings {...commonProps} onExportBackup={() => {}} onImportBackup={() => {}} onResetApp={handleResetApp} />}
@@ -130,7 +134,7 @@ export default function App() {
         <div className="max-w-md mx-auto flex justify-around">
           {[
             { id: "home", icon: Clock, label: "الرئيسية" },
-            { id: "hifz", icon: Plus, label: "الحفظ" },
+            ...(userProfile?.appTrack !== "review_only" ? [{ id: "hifz", icon: Plus, label: "الحفظ" }] : []),
             { id: "review", icon: RotateCcw, label: "المراجعة" },
             { id: "prayers", icon: Compass, label: "الصلوات" },
             { id: "mushaf", icon: BookOpen, label: "المصحف" },
