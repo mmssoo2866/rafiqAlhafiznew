@@ -225,32 +225,37 @@ function distributeContentToSlots(
   if (slots.length === 0 || contentItems.length === 0) return [];
 
   const distributed: DistributedSlot[] = [];
-  const totalItems = contentItems.length;
-  const numSlots = slots.length;
 
-  for (let sIdx = 0; sIdx < numSlots; sIdx++) {
-    const slot = slots[sIdx];
+  // Sequential distribution: Fill slots one by one starting from the first available slot.
+  // This ensures we don't skip the first Rakahs if content is limited.
+  contentItems.forEach((content, index) => {
+    // If we have more items than slots, we wrap around (or we could chunk,
+    // but sequential filling is usually what users expect for prayers)
+    const slotIdx = index % slots.length;
+    const slot = slots[slotIdx];
 
-    // Chunking logic: find which items belong to this slot
-    const startIdx = Math.floor((sIdx * totalItems) / numSlots);
-    const endIdx = Math.floor(((sIdx + 1) * totalItems) / numSlots);
-
-    const slotItems = contentItems.slice(startIdx, endIdx);
-    if (slotItems.length > 0) {
-      // If multiple items in one slot, join them nicely
-      const contentStr = slotItems.join(" + ");
-
+    // If a slot already has content (during wrap-around), we append it
+    const existing = distributed.find(d => d.id === `${idPrefix}-${slotIdx}`);
+    if (existing) {
+      existing.assignedContent += ` + ${content}`;
+    } else {
       distributed.push({
-        id: `${idPrefix}-${sIdx}`,
+        id: `${idPrefix}-${slotIdx}`,
         parentPrayer: slot.parentPrayer,
         prayerName: slot.prayerName,
         prayerType: slot.type,
         rakahNumber: slot.rakah,
-        assignedContent: contentStr
+        assignedContent: content
       });
     }
-  }
-  return distributed;
+  });
+
+  // Re-sort distributed items based on their original slot order to maintain chronological view
+  return distributed.sort((a, b) => {
+    const aIdx = parseInt(a.id.split('-').pop() || "0");
+    const bIdx = parseInt(b.id.split('-').pop() || "0");
+    return aIdx - bIdx;
+  });
 }
 
 /**
