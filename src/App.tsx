@@ -49,7 +49,7 @@ export default function App() {
   const [gpsLoading, setGpsLoading] = useState(false);
   const [mushafPage, setMushafPage] = useState<number>(1);
   const [mushafViewMode, setMushafViewMode] = useState<"image" | "offline">("image");
-  const [newHifz, setNewHifz] = useState({ surahId: 67, fromAyah: 1, toAyah: 10, repetitions: 100 });
+  const [newHifz, setNewHifz] = useState({ surahId: 1, fromAyah: 1, toAyah: 7, repetitions: 100 });
   const [deletingBlockId, setDeletingBlockId] = useState<string | null>(null);
 
   useEffect(() => {
