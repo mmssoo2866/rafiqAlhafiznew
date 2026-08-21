@@ -23,7 +23,8 @@ const Review: React.FC<ReviewProps> = ({
   cumulativeGroups,
   distributionSlots,
   onUpdateReviewProgress,
-  onSetMushafPage
+  onSetMushafPage,
+  onToggleTab
 }) => {
   const isReviewOnly = state.profile?.appTrack === "review_only";
   const currentProgress = state.reviewProgress[todayStr] || 0;
