@@ -167,18 +167,36 @@ export function buildPrayerSlots(profile: UserProfile): {
     }
   }
 
-  // The master chronological order as requested in v2.1
+  // The master chronological order as requested in v2.1.2
+  // Structure: Prayer + its following sunnahs
   const groupOrder = [
-    "duha", "sunnah_fajr", "fajr", "sunnah_dhuhr_before", "dhuhr", "sunnah_dhuhr_after",
-    "sunnah_asr", "asr", "maghrib", "sunnah_maghrib", "isha", "sunnah_isha", "qiyam"
+    "fajr", "sunnah_fajr", "duha", "dhuhr", "sunnah_dhuhr_after", "sunnah_dhuhr_before",
+    "asr", "sunnah_asr", "maghrib", "sunnah_maghrib", "isha", "sunnah_isha", "qiyam"
   ];
 
-  // Rotate based on user start point (e.g., if start is 'asr', distribution begins at asr)
+  // Logic: "كل صلاة الحق بها السنة اللتي تتبعها"
+  // Note: Standard Sunnah Mu'akkadah:
+  // Fajr: 2 before. Dhuhr: 4 before, 2 after. Maghrib: 2 after. Isha: 2 after.
+  // To strictly follow "حق بها السنة اللتي تتبعها", we arrange them in blocks.
+
+  const blocks: Record<string, string[]> = {
+    fajr: ["sunnah_fajr", "fajr"], // Sunnah is before but belongs to Fajr block
+    duha: ["duha"],
+    dhuhr: ["sunnah_dhuhr_before", "dhuhr", "sunnah_dhuhr_after"],
+    asr: ["sunnah_asr", "asr"],
+    maghrib: ["maghrib", "sunnah_maghrib"],
+    isha: ["isha", "sunnah_isha"],
+    qiyam: ["qiyam"]
+  };
+
+  const blockOrder = ["fajr", "duha", "dhuhr", "asr", "maghrib", "isha", "qiyam"];
+
+  // Rotate based on user start point (main prayer names)
   const startPoint = profile.reviewStartPoint || "fajr";
-  const startIndex = groupOrder.indexOf(startPoint);
-  const rotatedOrder = startIndex === -1 ? groupOrder : [
-    ...groupOrder.slice(startIndex),
-    ...groupOrder.slice(0, startIndex)
+  const startIndex = blockOrder.indexOf(startPoint);
+  const rotatedBlockOrder = startIndex === -1 ? blockOrder : [
+    ...blockOrder.slice(startIndex),
+    ...blockOrder.slice(0, startIndex)
   ];
 
   const slots: {
@@ -188,8 +206,10 @@ export function buildPrayerSlots(profile: UserProfile): {
     rakah: number
   }[] = [];
 
-  rotatedOrder.forEach(key => {
-    slots.push(...groups[key]);
+  rotatedBlockOrder.forEach(blockKey => {
+    blocks[blockKey].forEach(groupKey => {
+      slots.push(...groups[groupKey]);
+    });
   });
 
   return slots;

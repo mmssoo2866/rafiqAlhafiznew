@@ -46,14 +46,13 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600">نقطة بداية المراجعة اليومية</label>
             <select value={userProfile.reviewStartPoint} onChange={(e) => updateProfile({ reviewStartPoint: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
+              <option value="fajr">الفجر (+ السنة)</option>
               <option value="duha">الضحى</option>
-              <option value="sunnah_fajr">سنة الفجر</option>
-              <option value="fajr">الفجر</option>
-              <option value="dhuhr">الظهر</option>
-              <option value="asr">العصر</option>
-              <option value="maghrib">المغرب</option>
-              <option value="isha">العشاء</option>
-              <option value="qiyam">قيام الليل / الوتر</option>
+              <option value="dhuhr">الظهر (+ السنن)</option>
+              <option value="asr">العصر (+ السنة)</option>
+              <option value="maghrib">المغرب (+ السنة)</option>
+              <option value="isha">العشاء (+ السنة)</option>
+              <option value="qiyam">صلاة الليل / الوتر</option>
             </select>
           </div>
 
