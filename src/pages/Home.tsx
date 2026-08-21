@@ -175,6 +175,32 @@ const Home: React.FC<HomeProps> = ({
               </button>
             </div>
           </div>
+
+          {/* ADDED FOR REVIEW ONLY: Prayer Times and Stats */}
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4">
+              <h3 className="text-lg font-serif font-bold text-emerald-900 border-b pb-3">🕌 مواقيت الصلاة</h3>
+              <div className="space-y-2">
+                {prayerTimesList.map((p) => (
+                  <div key={p.name} className="flex items-center justify-between text-xs p-2 rounded-xl bg-gray-50">
+                    <span className="font-semibold">{p.arabicName}</span>
+                    <span className="font-mono font-bold">{p.time.toLocaleTimeString("ar-SA", { hour: "2-digit", minute: "2-digit" })}</span>
+                  </div>
+                ))}
+              </div>
+              <button onClick={onDetectLocation} disabled={gpsLoading} className="w-full py-2 bg-emerald-50 text-emerald-700 rounded-xl text-[10px] font-bold flex items-center justify-center gap-1 transition">
+                <Compass className={`w-3.5 h-3.5 ${gpsLoading ? "animate-spin" : ""}`} /> تحديث GPS
+              </button>
+            </div>
+
+            <div className="bg-white rounded-3xl p-6 shadow-sm border border-emerald-500/10 space-y-4 text-right">
+              <h3 className="text-lg font-serif font-bold text-emerald-900 border-b border-gray-100 pb-3 flex items-center justify-between"><span>📊 الإحصائيات والتقدم العام</span><Activity className="w-5 h-5 text-emerald-600" /></h3>
+              <div className="grid grid-cols-2 gap-4 text-center">
+                <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">إجمالي الحفظ</p><p className="text-lg font-bold text-emerald-900">{memorizedVersesCount} آية</p></div>
+                <div className="bg-gray-50 p-4 rounded-2xl"><p className="text-[10px] text-gray-500">أيام الاستمرار</p><p className="text-lg font-bold text-amber-600">{userProfile.streakDays} يوم</p></div>
+              </div>
+            </div>
+          </div>
         </div>
       ) : (
         <div className="space-y-6">
