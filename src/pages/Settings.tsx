@@ -84,14 +84,14 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600">ركعات صلاة الضحى</label>
             <select value={userProfile.duhaRakats} onChange={(e) => updateProfile({ duhaRakats: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
-              {[0, 2, 4, 6, 8, 12].map(r => <option key={r} value={r}>{r === 0 ? "بدون مراجعة في الضحى" : `${r} ركعات`}</option>)}
+              {[0, 2, 4, 6, 8].map(r => <option key={r} value={r}>{r === 0 ? "بدون مراجعة في الضحى" : `${r} ركعات`}</option>)}
             </select>
           </div>
 
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600">ركعات قيام الليل</label>
             <select value={userProfile.nightPrayerRakats} onChange={(e) => updateProfile({ nightPrayerRakats: Number(e.target.value) })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
-              {[2, 4, 8, 11].map(r => <option key={r} value={r}>{r} ركعات</option>)}
+              {[2, 4, 6, 8, 10, 12].map(r => <option key={r} value={r}>{r} ركعات</option>)}
             </select>
           </div>
         </div>
