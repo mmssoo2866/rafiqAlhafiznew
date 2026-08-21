@@ -10,6 +10,7 @@ interface ReviewProps extends PageProps {
   cumulativeGroups: any[];
   distributionSlots: any[];
   onUpdateReviewProgress: (idx: number) => void;
+  onSetMushafPage?: (p: number) => void;
 }
 
 const Review: React.FC<ReviewProps> = ({
@@ -20,7 +21,8 @@ const Review: React.FC<ReviewProps> = ({
   onToggleReviewComplete,
   cumulativeGroups,
   distributionSlots,
-  onUpdateReviewProgress
+  onUpdateReviewProgress,
+  onSetMushafPage
 }) => {
   const isReviewOnly = state.profile?.appTrack === "review_only";
   const currentProgress = state.reviewProgress[todayStr] || 0;
@@ -75,12 +77,20 @@ const Review: React.FC<ReviewProps> = ({
                     </div>
                     <div className="flex items-center gap-1">
                       <button onClick={() => {
-                        const match = slot.assignedContent.match(/سورة ([\u0600-\u06FF]+)/);
-                        if (match) {
-                          const found = SURAHS.find(s => s.name === match[1]);
-                          if (found) onNavigateToMushaf(found.id, 1);
+                        // Track 1 pattern: سورة البقرة (1-5)
+                        const surahMatch = slot.assignedContent.match(/سورة ([\u0600-\u06FF]+)(?:\s+\((\d+))?/);
+                        // Track 2 pattern: ص (\d+)
+                        const pageMatch = slot.assignedContent.match(/ص (\d+)/);
+
+                        if (pageMatch && onSetMushafPage) {
+                          onSetMushafPage(Number(pageMatch[1]));
+                          onToggleTab("mushaf");
+                        } else if (surahMatch) {
+                          const found = SURAHS.find(s => s.name === surahMatch[1]);
+                          const ayah = surahMatch[2] ? Number(surahMatch[2]) : 1;
+                          if (found) onNavigateToMushaf(found.id, ayah);
                         }
-                      }} className="p-1.5 bg-white border border-gray-200 rounded-lg text-emerald-700"><BookOpen className="w-3.5 h-3.5" /></button>
+                      }} className="p-1.5 bg-white border border-gray-200 rounded-lg text-emerald-700 shadow-sm hover:bg-emerald-50 transition"><BookOpen className="w-3.5 h-3.5" /></button>
                       <button onClick={() => onUpdateReviewProgress(isCompleted ? idx : idx + 1)} className={`p-1.5 rounded-lg border transition-all ${isCompleted ? "bg-emerald-600 border-emerald-700 text-white" : "bg-white text-gray-400 border-gray-300"}`}><Check className="w-3.5 h-3.5" /></button>
                     </div>
                   </div>

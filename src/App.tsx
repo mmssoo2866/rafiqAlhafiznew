@@ -77,10 +77,12 @@ export default function App() {
     : distributeReviewsToPrayers(todayTasks, userProfile);
 
   const onNavigateToMushaf = (sId: number, aNum: number) => {
+    const page = getPageForAyah(sId, aNum);
+    setMushafPage(page);
     setActiveTab("mushaf");
   };
 
-  const commonProps = { state, todayStr, onUpdateState: updateState, onNavigateToMushaf, onToggleTab: setActiveTab };
+  const commonProps = { state, todayStr, onUpdateState: updateState, onNavigateToMushaf, onToggleTab: setActiveTab, onSetMushafPage: setMushafPage };
 
   const updateProfile = (changes: any) => {
     updateState({ ...state, profile: { ...userProfile, ...changes } });
@@ -135,7 +137,6 @@ export default function App() {
             { id: "home", icon: Clock, label: "الرئيسية" },
             ...(userProfile?.appTrack !== "review_only" ? [{ id: "hifz", icon: Plus, label: "الحفظ" }] : []),
             { id: "review", icon: RotateCcw, label: "المراجعة" },
-            { id: "prayers", icon: Compass, label: "الصلوات" },
             { id: "mushaf", icon: BookOpen, label: "المصحف" },
             { id: "settings", icon: SettingsIcon, label: "الإعدادات" }
           ].map(tab => (
