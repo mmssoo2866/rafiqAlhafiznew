@@ -11,16 +11,34 @@ interface MushafProps extends PageProps {
   setMushafViewMode: (m: "image" | "offline") => void;
 }
 
-const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, mushafViewMode, setMushafViewMode, onUpdateState }) => {
+const Mushaf: React.FC<MushafProps> = ({ state, todayStr, mushafPage, setMushafPage, mushafViewMode, setMushafViewMode, onUpdateState, onNavigateToMushaf, onToggleTab }) => {
   const currentSurahId = SURAHS.slice().reverse().find(s => mushafPage >= s.startPage)?.id || 1;
   const currentSurah = getSurahById(currentSurahId);
-  const [inputAyah, setInputAyah] = React.useState<number>(1);
+  const [tempAyah, setTempAyah] = React.useState<string>("1");
 
-  const handleAyahChange = (ayah: number) => {
-    const safeAyah = Math.max(1, Math.min(currentSurah?.ayahs || 1, ayah));
-    setInputAyah(safeAyah);
-    const page = getPageForAyah(currentSurahId, safeAyah);
-    setMushafPage(page);
+  // Sync tempAyah when page changes (e.g. via buttons)
+  // We find the first ayah on this page to display
+  React.useEffect(() => {
+    if (mushafPage >= 1 && mushafPage <= 604) {
+      const [sId, aNum] = PAGE_START_AYAH[mushafPage - 1];
+      if (sId === currentSurahId) {
+        setTempAyah(String(aNum));
+      } else {
+        setTempAyah("1");
+      }
+    }
+  }, [mushafPage, currentSurahId]);
+
+  const handleAyahInput = (val: string) => {
+    setTempAyah(val);
+    const num = parseInt(val);
+    if (!isNaN(num) && num > 0) {
+      const safeAyah = Math.min(currentSurah?.ayahs || 1, num);
+      const page = getPageForAyah(currentSurahId, safeAyah);
+      if (page !== mushafPage) {
+        setMushafPage(page);
+      }
+    }
   };
 
   return (
@@ -49,7 +67,7 @@ const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, musha
                 const s = getSurahById(sId);
                 if (s) {
                   setMushafPage(s.startPage);
-                  setInputAyah(1);
+                  setTempAyah("1");
                 }
               }}
               className="w-full px-3 py-2 border border-gray-300 rounded-xl bg-gray-50 text-xs font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
@@ -61,8 +79,8 @@ const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, musha
             <label className="text-[10px] font-bold text-gray-400">الآية (1-{currentSurah?.ayahs})</label>
             <input
               type="number"
-              value={inputAyah}
-              onChange={(e) => handleAyahChange(Number(e.target.value))}
+              value={tempAyah}
+              onChange={(e) => handleAyahInput(e.target.value)}
               className="w-full px-3 py-2 border border-gray-300 rounded-xl text-center font-mono font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
             />
           </div>
@@ -71,7 +89,10 @@ const Mushaf: React.FC<MushafProps> = ({ state, mushafPage, setMushafPage, musha
             <input
               type="number"
               value={mushafPage}
-              onChange={(e) => setMushafPage(Math.max(1, Math.min(610, Number(e.target.value))))}
+              onChange={(e) => {
+                const p = Number(e.target.value);
+                if (!isNaN(p)) setMushafPage(Math.max(1, Math.min(610, p)));
+              }}
               className="w-full px-3 py-2 border border-gray-300 rounded-xl text-center font-mono font-bold focus:ring-2 focus:ring-emerald-600 outline-none"
             />
           </div>
