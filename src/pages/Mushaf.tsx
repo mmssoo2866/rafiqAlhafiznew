@@ -2,7 +2,7 @@ import React from "react";
 import { motion } from "motion/react";
 import { ChevronLeft, ChevronRight, BookOpen } from "lucide-react";
 import { PageProps } from "../types";
-import { SURAHS, getSurahById } from "../quranData";
+import { SURAHS, getSurahById, getPageForAyah, PAGE_START_AYAH } from "../quranData";
 
 interface MushafProps extends PageProps {
   mushafPage: number;
