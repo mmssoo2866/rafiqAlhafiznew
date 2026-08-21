@@ -166,6 +166,25 @@ export const useAppActions = () => {
     });
   }, [state, updateState]);
 
+  const handleResetApp = useCallback(() => {
+    if (!window.confirm("هل أنت متأكد من حذف كافة البيانات وإعادة ضبط التطبيق؟ لا يمكن التراجع عن هذا الإجراء.")) return;
+
+    const newState: AppState = {
+      profile: null,
+      blocks: [],
+      completedReviews: {},
+      repetitions: {},
+      mushafCache: [],
+      activityLog: [],
+      onboardingCompleted: false,
+      reviewProgress: {},
+      fullReviewDates: []
+    };
+
+    updateState(newState);
+    window.location.reload();
+  }, [updateState]);
+
   const handleCompleteKhatmahReviewToday = useCallback(() => {
     if (!state) return;
     const userProfile = state.profile!;
@@ -242,6 +261,7 @@ export const useAppActions = () => {
     handleDeleteBlock,
     handleToggleBlockStatus,
     handleDetectLocation,
-    handleCompleteKhatmahReviewToday
+    handleCompleteKhatmahReviewToday,
+    handleResetApp
   };
 };

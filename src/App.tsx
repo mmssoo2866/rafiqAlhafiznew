@@ -40,7 +40,8 @@ export default function App() {
     handleDeleteBlock,
     handleToggleBlockStatus,
     handleDetectLocation,
-    handleCompleteKhatmahReviewToday
+    handleCompleteKhatmahReviewToday,
+    handleResetApp
   } = useAppActions();
 
   const [activeTab, setActiveTab] = useState<TabType>("home");
@@ -120,7 +121,7 @@ export default function App() {
           {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} />}
           {activeTab === "prayers" && <Prayers {...commonProps} distributionSlots={distributionSlots} onUpdateReviewProgress={handleUpdateReviewProgress} />}
           {activeTab === "mushaf" && <Mushaf {...commonProps} mushafPage={mushafPage} setMushafPage={setMushafPage} mushafViewMode={mushafViewMode} setMushafViewMode={setMushafViewMode} />}
-          {activeTab === "settings" && <Settings {...commonProps} onExportBackup={() => {}} onImportBackup={() => {}} onResetApp={() => {}} />}
+          {activeTab === "settings" && <Settings {...commonProps} onExportBackup={() => {}} onImportBackup={() => {}} onResetApp={handleResetApp} />}
           {activeTab === "about" && <About onClose={() => setActiveTab("home")} />}
         </AnimatePresence>
       </main>
