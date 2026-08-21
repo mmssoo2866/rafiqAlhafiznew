@@ -68,8 +68,8 @@ const Onboarding: React.FC<OnboardingProps> = ({ onSubmit }) => {
             <div className="space-y-1 text-right">
               <label className="text-sm font-semibold text-gray-700">دور الصلاة</label>
               <select name="prayerRole" className="w-full px-3 py-2 border border-gray-300 rounded-xl focus:outline-none focus:ring-2 focus:ring-emerald-600 bg-gray-50">
-                <option value="imam">إمام (أقرأ جهراً وسراً)</option>
-                <option value="maamoom">مأموم (أستمع جهراً وأقرأ سراً)</option>
+                <option value="imam">منفرد/ إمام</option>
+                <option value="maamoom">مأموم</option>
               </select>
             </div>
             <div className="space-y-1 text-right">

@@ -76,8 +76,8 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
           <div className="space-y-2">
             <label className="text-xs font-bold text-gray-600">دور القراءة في الصلاة</label>
             <select value={userProfile.prayerRole} onChange={(e) => updateProfile({ prayerRole: e.target.value })} className="w-full px-4 py-2.5 border border-gray-300 rounded-xl bg-gray-50 text-sm font-bold">
-              <option value="imam">إمام (مراجعة جهرية وسرية)</option>
-              <option value="maamoom">مأموم (أستمع جهراً ومراجعة سرية)</option>
+              <option value="imam">منفرد/ إمام</option>
+              <option value="maamoom">مأموم</option>
             </select>
           </div>
 
