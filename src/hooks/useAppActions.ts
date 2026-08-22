@@ -198,6 +198,44 @@ export const useAppActions = () => {
     window.location.reload();
   }, [updateState]);
 
+  const handleExportBackup = useCallback(() => {
+    if (!state) return;
+    const dataStr = JSON.stringify(state, null, 2);
+    const dataUri = 'data:application/json;charset=utf-8,'+ encodeURIComponent(dataStr);
+
+    const exportFileDefaultName = `rafiq_backup_${new Date().toISOString().split('T')[0]}.json`;
+
+    const linkElement = document.createElement('a');
+    linkElement.setAttribute('href', dataUri);
+    linkElement.setAttribute('download', exportFileDefaultName);
+    linkElement.click();
+
+    setState(prev => prev ? logActivity(prev, "تصدير البيانات", "تم تصدير نسخة احتياطية من بياناتك بنجاح.") : null);
+  }, [state]);
+
+  const handleImportBackup = useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0];
+    if (!file) return;
+
+    const reader = new FileReader();
+    reader.onload = (event) => {
+      try {
+        const importedState = JSON.parse(event.target?.result as string) as AppState;
+        // Basic validation
+        if (importedState.profile && Array.isArray(importedState.blocks)) {
+          updateState(importedState);
+          alert("تم استيراد البيانات بنجاح! سيتم تحديث التطبيق الآن.");
+          window.location.reload();
+        } else {
+          alert("الملف المختار غير صالح.");
+        }
+      } catch (err) {
+        alert("فشل قراءة الملف. تأكد أنه ملف JSON سليم.");
+      }
+    };
+    reader.readAsText(file);
+  }, [updateState]);
+
   const handleCompleteKhatmahReviewToday = useCallback(() => {
     if (!state) return;
     const userProfile = state.profile!;
@@ -275,6 +313,8 @@ export const useAppActions = () => {
     handleToggleBlockStatus,
     handleDetectLocation,
     handleCompleteKhatmahReviewToday,
-    handleResetApp
+    handleResetApp,
+    handleExportBackup,
+    handleImportBackup
   };
 };

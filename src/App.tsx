@@ -44,7 +44,9 @@ export default function App() {
     handleToggleBlockStatus,
     handleDetectLocation,
     handleCompleteKhatmahReviewToday,
-    handleResetApp
+    handleResetApp,
+    handleExportBackup,
+    handleImportBackup
   } = useAppActions();
 
   const [activeTab, setActiveTab] = useState<TabType>("home");
@@ -130,7 +132,7 @@ export default function App() {
           {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} distributionSlots={distributionSlots} onUpdateReviewProgress={handleUpdateReviewProgress} />}
           {activeTab === "calendar" && <Calendar {...commonProps} />}
           {activeTab === "mushaf" && <Mushaf {...commonProps} mushafPage={mushafPage} setMushafPage={setMushafPage} mushafViewMode={mushafViewMode} setMushafViewMode={setMushafViewMode} />}
-          {activeTab === "settings" && <Settings {...commonProps} onExportBackup={() => {}} onImportBackup={() => {}} onResetApp={handleResetApp} />}
+          {activeTab === "settings" && <Settings {...commonProps} onExportBackup={handleExportBackup} onImportBackup={handleImportBackup} onResetApp={handleResetApp} />}
           {activeTab === "about" && <About onClose={() => setActiveTab("home")} />}
         </AnimatePresence>
       </main>
