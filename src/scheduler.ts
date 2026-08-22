@@ -5,31 +5,42 @@ export const SPACED_DAYS = [12, 14, 16, 21, 31, 41, 55, 66];
 export const ALL_REVIEW_DAYS = [...INTENSIVE_DAYS, ...SPACED_DAYS];
 
 /**
- * Calculates number of days between two dates.
+ * Calculates number of "active" days between two dates.
  * d1 represents the start date (Memorization Day, Day 1)
  * d2 represents the check date (Review Day)
  * fullReviewDates: optional list of dates when a full review was performed, pausing the counter.
+ * activeDays: optional list of week day numbers (0-6) where the user is active.
  */
-export function getDaysOffset(startDateStr: string, checkDateStr: string, fullReviewDates: string[] = []): number {
-  const d1 = new Date(startDateStr);
-  const d2 = new Date(checkDateStr);
+export function getDaysOffset(
+  startDateStr: string,
+  checkDateStr: string,
+  fullReviewDates: string[] = [],
+  activeDays: number[] = [0, 1, 2, 3, 4, 5, 6]
+): number {
+  const start = new Date(startDateStr);
+  const end = new Date(checkDateStr);
   
-  // Set times to midnight to ensure exact day calculations
-  d1.setHours(0, 0, 0, 0);
-  d2.setHours(0, 0, 0, 0);
+  start.setHours(0, 0, 0, 0);
+  end.setHours(0, 0, 0, 0);
   
-  const diffTime = d2.getTime() - d1.getTime();
-  let diffDays = Math.round(diffTime / (1000 * 60 * 60 * 24));
+  if (end < start) return 0;
 
-  // v2.1: Pause logic
-  // Subtract any dates in fullReviewDates that occurred after the startDateStr and before or on the checkDateStr.
-  const pauses = fullReviewDates.filter(pauseDate => {
-    return pauseDate > startDateStr && pauseDate <= checkDateStr;
-  }).length;
+  let activeDaysCount = 0;
+  let current = new Date(start);
 
-  diffDays -= pauses;
+  while (current <= end) {
+    const curStr = current.toISOString().split("T")[0];
+    const isPaused = fullReviewDates.includes(curStr);
+    const isDayActive = activeDays.includes(current.getDay());
 
-  return diffDays + 1; // Day 1 is the start day, so Day 2 is diffDays = 1.
+    if (isDayActive && !isPaused) {
+      activeDaysCount++;
+    }
+
+    current.setDate(current.getDate() + 1);
+  }
+
+  return activeDaysCount; // If start == end, returns 1 (Day 1)
 }
 
 export interface ScheduledTask {
@@ -44,16 +55,24 @@ export interface ScheduledTask {
  */
 export function getTasksForDate(state: AppState, targetDateStr: string): ScheduledTask[] {
   const tasks: ScheduledTask[] = [];
+  const activeDays = state.profile?.activeDays || [0, 1, 2, 3, 4, 5, 6];
+
+  // If today is a disabled day, no tasks are due
+  const targetDate = new Date(targetDateStr);
+  if (!activeDays.includes(targetDate.getDay())) {
+    return [];
+  }
+
   const completedList = state.completedReviews[targetDateStr] || [];
 
   // v2.1: Check if any block triggers Day 66 today to pause new memorization
   const isFullReviewDay = state.blocks.some(block => {
-    const offset = getDaysOffset(block.startDate, targetDateStr, state.fullReviewDates);
+    const offset = getDaysOffset(block.startDate, targetDateStr, state.fullReviewDates, activeDays);
     return offset === 66;
   });
 
   state.blocks.forEach((block) => {
-    const offset = getDaysOffset(block.startDate, targetDateStr, state.fullReviewDates);
+    const offset = getDaysOffset(block.startDate, targetDateStr, state.fullReviewDates, activeDays);
 
     if (offset === 1) {
       // Memorization day itself
@@ -109,8 +128,9 @@ export function getCumulativeGroups(blocks: MemorizationBlock[]): { id: string; 
  * Check if the user has hit Day 66 with any of their blocks today, which triggers the cumulative review reminder.
  */
 export function hasDay66TriggerToday(state: AppState, todayStr: string): boolean {
+  const activeDays = state.profile?.activeDays || [0, 1, 2, 3, 4, 5, 6];
   return state.blocks.some(block => {
-    const offset = getDaysOffset(block.startDate, todayStr, state.fullReviewDates);
+    const offset = getDaysOffset(block.startDate, todayStr, state.fullReviewDates, activeDays);
     return offset === 66;
   });
 }

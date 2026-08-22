@@ -49,6 +49,7 @@ export interface UserProfile {
   mainReviewProgressPages?: number;
   reviewStartPoint: string;
   enabledPrayers?: string[]; // v2.1.2: user selected prayers for review
+  activeDays?: number[]; // v2.1.3: 0-6 (Sun-Sat)
 }
 
 export interface MemorizationBlock {
@@ -122,7 +123,8 @@ export const DEFAULT_PROFILE: UserProfile = {
   mainReviewDailyAmountValue: 10, // Default 10 pages for main review
   mainReviewProgressPages: 0,
   reviewStartPoint: 'fajr',
-  enabledPrayers: ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam']
+  enabledPrayers: ['fajr', 'duha', 'dhuhr', 'asr', 'maghrib', 'isha', 'qiyam'],
+  activeDays: [0, 1, 2, 3, 4, 5, 6]
 };
 
 export function loadAppState(): AppState {
@@ -159,21 +161,35 @@ export function loadAppState(): AppState {
     if (state.onboardingCompleted === undefined) state.onboardingCompleted = false;
     if (!state.reviewProgress) state.reviewProgress = {};
     if (!state.fullReviewDates) state.fullReviewDates = [];
+    if (state.profile && !state.profile.activeDays) state.profile.activeDays = [0, 1, 2, 3, 4, 5, 6];
 
     const todayStr = getLocalDateKey();
     if (state.profile && state.profile.lastActiveDate !== todayStr) {
-      // Check if the user missed a day
-      const yesterday = new Date();
-      yesterday.setDate(yesterday.getDate() - 1);
-      const yYear = yesterday.getFullYear();
-      const yMonth = String(yesterday.getMonth() + 1).padStart(2, "0");
-      const yDay = String(yesterday.getDate()).padStart(2, "0");
-      const yesterdayStr = `${yYear}-${yMonth}-${yDay}`;
+      const activeDays = state.profile.activeDays || [0, 1, 2, 3, 4, 5, 6];
+      const todayDay = new Date().getDay();
       
-      // If the last activity wasn't yesterday, the streak is broken
-      if (state.profile.lastActiveDate !== yesterdayStr) {
-        state.profile.streakDays = 0; // Reset to 0 until they do an action today
-        saveAppState(state);
+      // If today is a disabled day, we don't calculate streak or reset tasks here
+      // But we still might want to show the current state.
+      // However, getTasksForDate will return [] for disabled days anyway.
+
+      if (activeDays.includes(todayDay)) {
+          // Check if the user missed the PREVIOUS active day
+          const checkDate = new Date();
+          checkDate.setHours(0, 0, 0, 0);
+          let prevActiveDayStr = "";
+          for (let i = 1; i <= 7; i++) {
+            const d = new Date(checkDate);
+            d.setDate(d.getDate() - i);
+            if (activeDays.includes(d.getDay())) {
+                prevActiveDayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+                break;
+            }
+          }
+
+          if (state.profile.lastActiveDate !== prevActiveDayStr) {
+            state.profile.streakDays = 0;
+            saveAppState(state);
+          }
       }
 
       // Reset daily progress for the new day

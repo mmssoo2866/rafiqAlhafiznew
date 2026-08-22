@@ -15,12 +15,25 @@ export const useAppActions = () => {
     const todayStr = getLocalDateKey();
     if (currentState.profile.lastActiveDate === todayStr) return currentState;
 
-    const yesterday = new Date();
-    yesterday.setDate(yesterday.getDate() - 1);
-    const yStr = `${yesterday.getFullYear()}-${String(yesterday.getMonth() + 1).padStart(2, "0")}-${String(yesterday.getDate()).padStart(2, "0")}`;
+    const activeDays = currentState.profile.activeDays || [0, 1, 2, 3, 4, 5, 6];
+
+    // Find the last active day before today
+    const checkDate = new Date();
+    checkDate.setHours(0, 0, 0, 0);
+    let prevActiveDayStr = "";
+
+    // Look back up to 7 days to find the previous scheduled active day
+    for (let i = 1; i <= 7; i++) {
+        const d = new Date(checkDate);
+        d.setDate(d.getDate() - i);
+        if (activeDays.includes(d.getDay())) {
+            prevActiveDayStr = `${d.getFullYear()}-${String(d.getMonth() + 1).padStart(2, "0")}-${String(d.getDate()).padStart(2, "0")}`;
+            break;
+        }
+    }
 
     let newStreak = currentState.profile.streakDays;
-    if (currentState.profile.lastActiveDate === yStr) {
+    if (currentState.profile.lastActiveDate === prevActiveDayStr) {
       newStreak += 1;
     } else {
       newStreak = 1;

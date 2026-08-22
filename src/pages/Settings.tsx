@@ -95,6 +95,38 @@ const Settings: React.FC<SettingsProps> = ({ state, onUpdateState, onExportBacku
             </select>
           </div>
         </div>
+
+        <div className="space-y-4 pt-4 border-t border-gray-100">
+          <label className="text-xs font-bold text-emerald-800">أيام العمل الأسبوعية (اختر أيام الحفظ والمراجعة)</label>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            {[
+              { id: 6, name: 'السبت' },
+              { id: 0, name: 'الأحد' },
+              { id: 1, name: 'الاثنين' },
+              { id: 2, name: 'الثلاثاء' },
+              { id: 3, name: 'الأربعاء' },
+              { id: 4, name: 'الخميس' },
+              { id: 5, name: 'الجمعة' }
+            ].map(day => (
+              <button
+                key={day.id}
+                onClick={() => {
+                  const current = userProfile.activeDays || [0, 1, 2, 3, 4, 5, 6];
+                  const updated = current.includes(day.id) ? current.filter(d => d !== day.id) : [...current, day.id];
+                  if (updated.length > 0) updateProfile({ activeDays: updated });
+                }}
+                className={`py-2 px-3 rounded-xl text-xs font-bold transition-all border ${
+                  (userProfile.activeDays || [0, 1, 2, 3, 4, 5, 6]).includes(day.id)
+                  ? "bg-emerald-700 text-white border-emerald-800"
+                  : "bg-gray-50 text-gray-400 border-gray-200"
+                }`}
+              >
+                {day.name}
+              </button>
+            ))}
+          </div>
+          <p className="text-[10px] text-gray-400">ملاحظة: سيقوم التطبيق بتعديل الجدولة لتتخطى الأيام غير المختارة.</p>
+        </div>
       </div>
 
       <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
