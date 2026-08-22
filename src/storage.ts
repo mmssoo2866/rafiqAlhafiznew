@@ -94,7 +94,7 @@ export const DEFAULT_PROFILE: UserProfile = {
   useSunnah: true,
   memorizationDirection: "forward",
   autoOpenMushaf: true,
-  streakDays: 3,
+  streakDays: 0,
   lastActiveDate: getLocalDateKey(),
   enableNotifications: true,
   notifyPrayerTimes: true,
