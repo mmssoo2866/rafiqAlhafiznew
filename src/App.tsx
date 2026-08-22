@@ -6,6 +6,7 @@ import {
   Plus,
   RotateCcw, 
   Settings as SettingsIcon,
+  Calendar as CalendarIcon,
   Info,
   Flame
 } from "lucide-react";
@@ -24,6 +25,7 @@ import Hifz from "./pages/Hifz";
 import Review from "./pages/Review";
 import Prayers from "./pages/Prayers";
 import Mushaf from "./pages/Mushaf";
+import Calendar from "./pages/Calendar";
 import Settings from "./pages/Settings";
 import About from "./pages/About";
 import Onboarding from "./components/Onboarding";
@@ -98,7 +100,7 @@ export default function App() {
             <div className="w-10 h-10 bg-amber-500/10 border border-amber-500 rounded-xl flex items-center justify-center text-xl">📖</div>
             <div>
               <h1 className="text-xl font-bold font-serif flex items-center gap-2">
-                رفيق الحافظ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.1.2</span>
+                رفيق الحافظ <span className="text-[10px] px-2 py-0.5 bg-amber-500/20 text-amber-300 border border-amber-500/30 rounded-full font-sans">v2.1.3</span>
                 <button onClick={() => setActiveTab("about")} className="mr-2 px-3 py-1 bg-white/10 rounded-full text-[10px] font-bold">عن التطبيق</button>
               </h1>
               <p className="text-[10px] text-emerald-200">الجدولة التفاعلية والمراجعة المدمجة بالصلوات</p>
@@ -126,6 +128,7 @@ export default function App() {
           {activeTab === "home" && <Home {...commonProps} onDetectLocation={handleDetectLocation} gpsLoading={gpsLoading} prayerTimesList={prayerTimesList} todayTasks={todayTasks} repetitions={state.repetitions} onDecrementRepetition={handleDecrementRepetition} onToggleReviewComplete={handleToggleReviewComplete} onCompleteDay66={handleCompleteDay66} hasDay66={hasDay66TriggerToday(state, todayStr)} distributionSlots={distributionSlots} onCompleteKhatmahReview={handleCompleteKhatmahReviewToday} onUpdateProfile={updateProfile} />}
           {activeTab === "hifz" && <Hifz {...commonProps} newHifz={newHifz} setNewHifz={setNewHifz} onAddHifz={(e) => { e.preventDefault(); handleAddHifz(newHifz.surahId, newHifz.fromAyah, newHifz.toAyah, newHifz.repetitions); }} onDeleteBlock={handleDeleteBlock} onToggleBlockStatus={handleToggleBlockStatus} deletingBlockId={deletingBlockId} setDeletingBlockId={setDeletingBlockId} />}
           {activeTab === "review" && <Review {...commonProps} todayTasks={todayTasks} onToggleReviewComplete={handleToggleReviewComplete} cumulativeGroups={getCumulativeGroups(state.blocks)} distributionSlots={distributionSlots} onUpdateReviewProgress={handleUpdateReviewProgress} />}
+          {activeTab === "calendar" && <Calendar {...commonProps} />}
           {activeTab === "mushaf" && <Mushaf {...commonProps} mushafPage={mushafPage} setMushafPage={setMushafPage} mushafViewMode={mushafViewMode} setMushafViewMode={setMushafViewMode} />}
           {activeTab === "settings" && <Settings {...commonProps} onExportBackup={() => {}} onImportBackup={() => {}} onResetApp={handleResetApp} />}
           {activeTab === "about" && <About onClose={() => setActiveTab("home")} />}
@@ -138,6 +141,7 @@ export default function App() {
             { id: "home", icon: Clock, label: "الرئيسية" },
             ...(userProfile?.appTrack !== "review_only" ? [{ id: "hifz", icon: Plus, label: "الحفظ" }] : []),
             { id: "review", icon: RotateCcw, label: "المراجعة" },
+            { id: "calendar", icon: CalendarIcon, label: "التقويم" },
             { id: "mushaf", icon: BookOpen, label: "المصحف" },
             { id: "settings", icon: SettingsIcon, label: "الإعدادات" }
           ].map(tab => (

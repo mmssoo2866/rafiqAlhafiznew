@@ -2,7 +2,7 @@ import { AppState, MemorizationBlock, UserProfile } from "../storage";
 import { ScheduledTask } from "../scheduler";
 import { DistributedSlot } from "../prayerEngine";
 
-export type TabType = "home" | "hifz" | "review" | "prayers" | "mushaf" | "settings" | "about";
+export type TabType = "home" | "hifz" | "review" | "calendar" | "mushaf" | "settings" | "about";
 
 export interface PageProps {
   state: AppState;
