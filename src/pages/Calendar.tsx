@@ -44,6 +44,9 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
     const dateStr = date.toISOString().split("T")[0];
     const isSelected = selectedDateStr === dateStr;
     const isToday = todayStr === dateStr;
+    const activeDays = state.profile?.activeDays || [0, 1, 2, 3, 4, 5, 6];
+    const isInactive = !activeDays.includes(date.getDay());
+
     const tasks = getTasksForDate(state, dateStr);
     const hasHifz = tasks.some(t => t.type === "memorization");
     const hasReview = tasks.some(t => t.type === "review");
@@ -59,10 +62,12 @@ const Calendar: React.FC<PageProps> = ({ state, todayStr, onToggleTab, onNavigat
             ? "bg-emerald-700 text-white border-emerald-800 shadow-md scale-105 z-10"
             : isToday
               ? "bg-amber-50 text-emerald-950 border-amber-200"
-              : "bg-white text-gray-700 border-gray-100 hover:bg-gray-50"
+              : isInactive
+                ? "bg-slate-50 text-slate-300 border-slate-100/50 opacity-80"
+                : "bg-white text-gray-700 border-gray-100 hover:bg-gray-50"
         }`}
       >
-        <span className="text-sm font-bold">{day}</span>
+        <span className={`text-sm font-bold ${isInactive && !isSelected ? "line-through decoration-slate-200" : ""}`}>{day}</span>
         <div className="flex gap-0.5 mt-1">
           {hasHifz && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white" : "bg-emerald-500"}`} title="حفظ" />}
           {hasReview && <div className={`w-1.5 h-1.5 rounded-full ${isSelected ? "bg-white/70" : "bg-blue-400"}`} title="مراجعة" />}
